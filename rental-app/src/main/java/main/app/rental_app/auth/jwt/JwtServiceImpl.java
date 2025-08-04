@@ -128,11 +128,11 @@ public class JwtServiceImpl implements JwtService {
             log.debug("Token length: {}", token.length());
             
             Claims claims = Jwts
-                .parser()
+                .parserBuilder()
                 .setSigningKey(getSignInKey())
                 .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                .parseClaimsJws(token)
+                .getBody();
                 
             log.debug("Successfully parsed token claims");
             return claims;
