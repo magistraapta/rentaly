@@ -20,7 +20,6 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public Invoices createInvoice(Invoices invoice) {
         try {
-            log.info("Service: Creating invoice: {}", invoice);
             inventoryService.decreaseCarInventory(invoice.getCar().getId());
             return invoiceRepository.save(invoice);
         } catch (Exception e) {
@@ -30,14 +29,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public Invoices getInvoiceById(Long id) {
-        log.info("Service: Getting invoice by id: {}", id);
         return invoiceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Invoice not found"));
     }
 
     @Override
     public List<Invoices> getAllInvoices() {
-        log.info("Service: Getting all invoices");
         return invoiceRepository.findAll();
     }
 }
