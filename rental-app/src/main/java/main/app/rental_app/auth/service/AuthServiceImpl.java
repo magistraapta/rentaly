@@ -31,6 +31,10 @@ import main.app.rental_app.user.repository.UserRepository;
 import main.app.rental_app.auth.model.RefreshToken;
 import main.app.rental_app.auth.repository.RefreshTokenRepository;
 import main.app.rental_app.exc.BadRequestException;
+import main.app.rental_app.shared.BaseResponse;
+import main.app.rental_app.auth.model.dto.response.RegisterResponseDto;
+import main.app.rental_app.auth.model.dto.response.LoginResponseDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +54,7 @@ public class AuthServiceImpl implements AuthService {
     private long refreshTokenExpiration;
 
     @Override
-    public ResponseEntity<?> register(RegisterRequest registerRequest) {
+    public ResponseEntity<BaseResponse<RegisterResponseDto>> register(RegisterRequest registerRequest) {
         User newUser = User.builder()
                     .username(registerRequest.getUsername())
                     .email(registerRequest.getEmail())
@@ -60,12 +64,14 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(newUser);
 
+        RegisterResponseDto responseDto = authMapper.userToRegisterResponseDto(newUser);
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                            .body(authMapper.userToRegisterResponseDto(newUser));
+                            .body(BaseResponse.success(HttpStatus.CREATED, "User registered successfully", responseDto));
     }
 
     @Override
-    public ResponseEntity<?> login(LoginRequest loginRequest) {
+    public ResponseEntity<BaseResponse<LoginResponseDto>> login(LoginRequest loginRequest) {
         User user = authenticate(loginRequest.getUsername(), loginRequest.getPassword());
         
         // Revoke any existing refresh tokens for this user
@@ -77,11 +83,11 @@ public class AuthServiceImpl implements AuthService {
         var response = authMapper.userToLoginResponseDto(user, accessToken, refreshToken);
 
         return ResponseEntity.status(HttpStatus.OK)
-                            .body(response);
+                            .body(BaseResponse.success(HttpStatus.OK, "Login successful", response));
     }
 
     @Override
-    public ResponseEntity<?> refreshToken(RefreshTokenDto dto) {
+    public ResponseEntity<BaseResponse<LoginResponseDto>> refreshToken(RefreshTokenDto dto) {
         RefreshToken oldToken = refreshTokenRepository.findByToken(dto.getRefreshToken())
             .orElseThrow(() -> new BadRequestException("Refresh token not found"));
     
@@ -96,11 +102,11 @@ public class AuthServiceImpl implements AuthService {
         var response = authMapper.userToLoginResponseDto(user, token, refreshToken);
 
         return ResponseEntity.status(HttpStatus.OK)
-                            .body(response);
+                            .body(BaseResponse.success(HttpStatus.OK, "Token refreshed successfully", response));
     }
 
     @Override
-    public ResponseEntity<?> logout(HttpServletRequest request) {
+    public ResponseEntity<BaseResponse<Void>> logout(HttpServletRequest request) {
         String token = jwtUtil.getTokenFromRequest(request);
 
         if (token == null) {
@@ -117,7 +123,7 @@ public class AuthServiceImpl implements AuthService {
 
         SecurityContextHolder.clearContext();
         return ResponseEntity.status(HttpStatus.OK)
-                            .body("Logged out successfully");
+                            .body(BaseResponse.success(HttpStatus.OK, "Logged out successfully"));
     }
 
 
