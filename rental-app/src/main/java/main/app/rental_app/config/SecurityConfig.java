@@ -13,6 +13,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
+import main.app.rental_app.exc.CustomAccessDeniedHandler;
+import main.app.rental_app.exc.CustomAuthEntryPoint;
 
 @Configuration
 @EnableWebSecurity
@@ -21,12 +23,16 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
     
     private final JwtFilter jwtFilter;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final CustomAuthEntryPoint customAuthEntryPoint;
     private final AuthenticationProvider authenticationProvider;
-
+    
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
             .csrf(csrf -> csrf.disable())
+            .exceptionHandling(exception -> exception.accessDeniedHandler(customAccessDeniedHandler)
+            .authenticationEntryPoint(customAuthEntryPoint))
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
