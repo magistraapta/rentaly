@@ -145,12 +145,10 @@ public class AuthServiceImpl implements AuthService {
 
     private void revokeAllTokensForUser(User user) {
         List<RefreshToken> tokens = refreshTokenRepository.findAllByUserAndIsRevokedFalse(user);
-        log.info("Found {} active refresh tokens for user: {}", tokens.size(), user.getUsername());
         
         tokens.forEach(t -> t.setRevoked(true));
         refreshTokenRepository.saveAll(tokens);
         
-        log.info("Successfully revoked {} refresh tokens for user: {}", tokens.size(), user.getUsername());
     }
 
     
