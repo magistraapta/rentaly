@@ -34,7 +34,6 @@ import main.app.rental_app.exc.BadRequestException;
 import main.app.rental_app.shared.BaseResponse;
 import main.app.rental_app.auth.model.dto.response.RegisterResponseDto;
 import main.app.rental_app.auth.model.dto.response.LoginResponseDto;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 @RequiredArgsConstructor
