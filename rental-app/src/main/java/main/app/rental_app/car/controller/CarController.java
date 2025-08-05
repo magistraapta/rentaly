@@ -1,9 +1,6 @@
 package main.app.rental_app.car.controller;
 
 import java.util.List;
-
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +16,8 @@ import main.app.rental_app.car.model.dto.CarDto;
 import main.app.rental_app.car.model.enums.CarType;
 import main.app.rental_app.exc.ResourceNotFoundException;
 import main.app.rental_app.auth.jwt.JwtUtil;
+import main.app.rental_app.shared.BaseResponse;
+import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/v1/cars")
@@ -30,7 +29,7 @@ public class CarController {
     private final JwtUtil jwtUtil;
 
     @GetMapping("/{id}")
-    public CarDto getCarById(@PathVariable Long id) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
+    public ResponseEntity<BaseResponse<CarDto>> getCarById(@PathVariable Long id) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
         // Check authentication (401 Unauthorized)
         jwtUtil.checkAuthentication();
         
@@ -47,7 +46,7 @@ public class CarController {
     }
 
     @GetMapping("/name/{name}")
-    public CarDto getCarByName(@PathVariable String name) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
+    public ResponseEntity<BaseResponse<CarDto>> getCarByName(@PathVariable String name) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
         // Check authentication (401 Unauthorized)
         jwtUtil.checkAuthentication();
         
@@ -61,7 +60,7 @@ public class CarController {
     }
 
     @GetMapping("/type/{type}")
-    public List<CarDto> getCarsByType(@PathVariable String type) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
+    public ResponseEntity<BaseResponse<List<CarDto>>> getCarsByType(@PathVariable String type) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
         // Check authentication (401 Unauthorized)
         jwtUtil.checkAuthentication();
         
