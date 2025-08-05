@@ -1,5 +1,6 @@
 package main.app.rental_app.auth.jwt;
 
+import main.app.rental_app.exc.UnauthorizedException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -45,9 +46,7 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         } catch (Exception e) {
             log.error("Error processing JWT token: {}", e.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write(e.getMessage());
-            return;
+            throw new UnauthorizedException("Invalid or expired token");
         }
 
         filterChain.doFilter(request, response);
