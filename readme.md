@@ -7,9 +7,12 @@
 - Admin should be able to see the status of their cars
 
 
-
 ### To-do Lists
 - [x] Create migration for all models
-- [ ] Create controller in all features
-- [ ] Setup auth
+- [x] Setup auth
+- [ ] Setup Docker
+- [ ] Setup prometheus & Grafana
+- [ ] setup upload modules
 - [ ] Setup swagger
+- [ ] Setup caching with redis
+- [ ] 
