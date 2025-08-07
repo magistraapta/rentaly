@@ -22,6 +22,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import main.app.rental_app.auth.model.RefreshToken;
 import main.app.rental_app.user.model.enums.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
 @Builder
@@ -37,49 +38,60 @@ public class User implements UserDetails {
     @Column(name = "username")
     private String username;
     
+    @JsonIgnore
     @Column(name = "email")
     private String email;
     
+    @JsonIgnore
     @Column(name = "password")
     private String password;
     
+    @JsonIgnore
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Role role;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<RefreshToken> refreshTokens;
 
+    @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
     
+    @JsonIgnore
     @Override
     public String getUsername() {
         return this.username;
     }
 
+    @JsonIgnore
     @Override
     public String getPassword() {
         return this.password;
     }
 
+    @JsonIgnore
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isAccountNonLocked() {
         return true;
     }
 
+    @JsonIgnore
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
-
+    
+    @JsonIgnore
     @Override
     public boolean isEnabled() {
         return true;
