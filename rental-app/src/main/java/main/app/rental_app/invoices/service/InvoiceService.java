@@ -3,8 +3,15 @@ package main.app.rental_app.invoices.service;
 import main.app.rental_app.invoices.model.Invoices;
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
+
+import main.app.rental_app.shared.BaseResponse;
+
 public interface InvoiceService {
-    Invoices createInvoice(Invoices invoice);
-    Invoices getInvoiceById(Long id);
-    List<Invoices> getAllInvoices();
+    ResponseEntity<BaseResponse<Invoices>> createInvoice(Invoices invoice, long carId);
+    ResponseEntity<BaseResponse<Invoices>> getInvoiceById(Long id);
+    ResponseEntity<BaseResponse<List<Invoices>>> getAllInvoices();
+    ResponseEntity<BaseResponse<List<Invoices>>> getInvoicesByUserId(Long userId);
+    ResponseEntity<BaseResponse<Invoices>> returnCar(Long invoiceId);
+    ResponseEntity<BaseResponse<Invoices>> cancelRental(Long invoiceId);
 }

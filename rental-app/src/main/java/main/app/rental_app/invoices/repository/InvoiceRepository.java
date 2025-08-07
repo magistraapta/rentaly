@@ -6,12 +6,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import main.app.rental_app.invoices.model.Invoices;
-import main.app.rental_app.invoices.model.enums.InvoiceStatus;
+import main.app.rental_app.invoices.model.enums.PaymentStatus;
 
 public interface InvoiceRepository extends JpaRepository<Invoices, Long> {
     
-    List<Invoices> findByStatus(InvoiceStatus status);
+    List<Invoices> findByStatus(PaymentStatus status);
     
     @Query("SELECT i FROM Invoices i WHERE i.status = :status")
-    List<Invoices> findByStatusWithQuery(InvoiceStatus status);
+    List<Invoices> findByStatusWithQuery(PaymentStatus status);
+
+    @Query("SELECT i FROM Invoices i WHERE i.user.id = :userId")
+    List<Invoices> findByUserId(Long userId);
 }

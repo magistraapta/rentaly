@@ -18,6 +18,7 @@ import lombok.AllArgsConstructor;
 import main.app.rental_app.car.model.enums.CarType;
 import main.app.rental_app.inventory.model.Inventory;
 import main.app.rental_app.invoices.model.Invoices;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
 
@@ -46,9 +47,11 @@ public class Car {
     private CarType carType;
     
     // One-to-Many relationship with Inventory
+    @JsonIgnore
     @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Inventory> inventories;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Invoices> invoices;
 }

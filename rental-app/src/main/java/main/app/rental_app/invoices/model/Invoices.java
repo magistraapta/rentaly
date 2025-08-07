@@ -15,8 +15,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import main.app.rental_app.invoices.model.enums.InvoiceStatus;
+import main.app.rental_app.invoices.model.enums.PaymentStatus;
+import main.app.rental_app.invoices.model.enums.RentStatus;
 import main.app.rental_app.user.model.User;
+
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import main.app.rental_app.car.model.Car;
 
@@ -40,8 +43,8 @@ public class Invoices {
     private Car car;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private InvoiceStatus status;
+    @Column(name = "payment_status")
+    private PaymentStatus status;
     
     @Column(name = "start_date")
     private LocalDateTime startDate;
@@ -51,5 +54,12 @@ public class Invoices {
     
     @Column(name = "total_price")
     private Integer totalPrice;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rent_status")
+    private RentStatus rentStatus;
+
+    @Column(name = "returned_at")
+    private Timestamp returnedAt;
 
 }
