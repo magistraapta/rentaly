@@ -58,4 +58,18 @@ public class InventoryServiceImpl implements InventoryService {
         
         log.info("Successfully increased inventory for car id: {}", carId);
     }
+
+    @Override
+    public void checkCarAvailability(Long carId) {
+        log.info("Checking availability for car id: {}", carId);
+        
+        Inventory inventory = inventoryRepository.findByCarId(carId)
+                .orElseThrow(() -> new ResourceNotFoundException("Inventory not found for car id: " + carId));
+        
+        if (inventory.getQuantity() <= 0) {
+            throw new BadRequestException("Car is out of stock (quantity: " + inventory.getQuantity() + ")");
+        }
+        
+        log.info("Car id: {} is available with quantity: {}", carId, inventory.getQuantity());
+    }
 }
