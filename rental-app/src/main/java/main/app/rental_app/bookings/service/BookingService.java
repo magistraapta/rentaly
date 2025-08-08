@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import main.app.rental_app.bookings.model.Invoices;
 import main.app.rental_app.shared.BaseResponse;
 
-public interface InvoiceService {
+public interface BookingService {
     ResponseEntity<BaseResponse<Invoices>> createInvoice(Invoices invoice, long carId);
     ResponseEntity<BaseResponse<Invoices>> getInvoiceById(Long id);
     ResponseEntity<BaseResponse<List<Invoices>>> getAllInvoices();
