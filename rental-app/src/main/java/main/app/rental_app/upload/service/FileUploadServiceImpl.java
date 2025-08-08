@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,8 @@ import main.app.rental_app.car.repository.CarRepository;
 public class FileUploadServiceImpl implements FileUploadService {
 
     // Use absolute path to rentaly parent folder with images directory
-    private static final String UPLOAD_DIR = "/Users/magistraapta/Desktop/Code/java/rentaly/images/";
+    @Value("${file.upload.directory}")
+    private String UPLOAD_DIR;
 
     private final FileUploadRepository fileUploadRepository;
     private final CarRepository carRepository;
