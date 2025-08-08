@@ -13,4 +13,5 @@ public class CarDto {
     private String description;
     private Integer price;
     private CarType carType;
+    private String carImage;
 }
