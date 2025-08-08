@@ -10,9 +10,8 @@
 ### To-do Lists
 - [x] Create migration for all models
 - [x] Setup auth
-- [ ] Setup Docker
-- [ ] Setup prometheus & Grafana
-- [ ] setup upload modules
+- [x] Setup Docker
+- [x] Setup prometheus & Grafana
+- [x] setup upload modules
 - [ ] Setup swagger
 - [ ] Setup caching with redis
-- [ ] 
