@@ -26,7 +26,7 @@ import main.app.rental_app.car.model.Car;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BookServiceImpl implements BookService {
+public class BookingServiceImpl implements BookingService {
     
     private final InvoiceRepository invoiceRepository;
     private final InventoryService inventoryService;

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 import main.app.rental_app.bookings.model.Invoices;
-import main.app.rental_app.bookings.service.BookService;
+import main.app.rental_app.bookings.service.BookingService;
 import main.app.rental_app.shared.BaseResponse;
 import java.util.List;
 
@@ -22,7 +22,7 @@ import java.util.List;
 @Slf4j
 public class BookingController {
     
-    private final BookService invoiceService;
+    private final BookingService invoiceService;
 
     @PostMapping("/book/{carId}")
     public ResponseEntity<BaseResponse<Invoices>> bookCar(@RequestBody Invoices invoice, @PathVariable long carId) {
