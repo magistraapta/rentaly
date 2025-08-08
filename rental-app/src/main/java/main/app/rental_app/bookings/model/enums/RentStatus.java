@@ -1,4 +1,4 @@
-package main.app.rental_app.invoices.model.enums;
+package main.app.rental_app.bookings.model.enums;
 
 public enum RentStatus {
     rented,

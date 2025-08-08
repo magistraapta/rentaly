@@ -1,12 +1,12 @@
-package main.app.rental_app.invoices.repository;
+package main.app.rental_app.bookings.repository;
 
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import main.app.rental_app.invoices.model.Invoices;
-import main.app.rental_app.invoices.model.enums.PaymentStatus;
+import main.app.rental_app.bookings.model.Invoices;
+import main.app.rental_app.bookings.model.enums.PaymentStatus;
 
 public interface InvoiceRepository extends JpaRepository<Invoices, Long> {
     

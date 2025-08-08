@@ -15,9 +15,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import main.app.rental_app.bookings.model.Invoices;
 import main.app.rental_app.car.model.enums.CarType;
 import main.app.rental_app.inventory.model.Inventory;
-import main.app.rental_app.invoices.model.Invoices;
 import main.app.rental_app.upload.model.CarImage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

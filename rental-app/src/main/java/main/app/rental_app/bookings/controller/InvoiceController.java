@@ -1,4 +1,4 @@
-package main.app.rental_app.invoices.controller;
+package main.app.rental_app.bookings.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
-import main.app.rental_app.invoices.model.Invoices;
-import main.app.rental_app.invoices.service.InvoiceService;
+import main.app.rental_app.bookings.model.Invoices;
+import main.app.rental_app.bookings.service.InvoiceService;
 import main.app.rental_app.shared.BaseResponse;
 import java.util.List;
 

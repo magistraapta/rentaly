@@ -1,4 +1,4 @@
-package main.app.rental_app.invoices.model;
+package main.app.rental_app.bookings.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,12 +15,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import main.app.rental_app.invoices.model.enums.PaymentStatus;
-import main.app.rental_app.invoices.model.enums.RentStatus;
 import main.app.rental_app.user.model.User;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+
+import main.app.rental_app.bookings.model.enums.PaymentStatus;
+import main.app.rental_app.bookings.model.enums.RentStatus;
 import main.app.rental_app.car.model.Car;
 import java.time.Instant;
 

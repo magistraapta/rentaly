@@ -1,10 +1,10 @@
-package main.app.rental_app.invoices.service;
+package main.app.rental_app.bookings.service;
 
-import main.app.rental_app.invoices.model.Invoices;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
+import main.app.rental_app.bookings.model.Invoices;
 import main.app.rental_app.shared.BaseResponse;
 
 public interface InvoiceService {

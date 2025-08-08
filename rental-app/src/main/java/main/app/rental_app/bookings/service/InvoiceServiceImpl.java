@@ -1,4 +1,4 @@
-package main.app.rental_app.invoices.service;
+package main.app.rental_app.bookings.service;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,16 +10,17 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.app.rental_app.invoices.model.Invoices;
-import main.app.rental_app.invoices.repository.InvoiceRepository;
 import main.app.rental_app.inventory.service.InventoryService;
 import main.app.rental_app.shared.BaseResponse;
 import main.app.rental_app.user.model.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import main.app.rental_app.invoices.model.enums.PaymentStatus;
-import main.app.rental_app.invoices.model.enums.RentStatus;
+
 import main.app.rental_app.car.repository.CarRepository;
+import main.app.rental_app.bookings.model.Invoices;
+import main.app.rental_app.bookings.model.enums.PaymentStatus;
+import main.app.rental_app.bookings.model.enums.RentStatus;
+import main.app.rental_app.bookings.repository.InvoiceRepository;
 import main.app.rental_app.car.model.Car;
 
 @Service
