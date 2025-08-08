@@ -18,9 +18,11 @@ import lombok.AllArgsConstructor;
 import main.app.rental_app.car.model.enums.CarType;
 import main.app.rental_app.inventory.model.Inventory;
 import main.app.rental_app.invoices.model.Invoices;
+import main.app.rental_app.upload.model.CarImage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -54,4 +56,14 @@ public class Car {
     @JsonIgnore
     @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Invoices> invoices;
+
+    // One-to-Many relationship with CarImage
+    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<CarImage> carImages;
+
+    @Column(name = "created_at")
+    private Instant createdAt;
+
+    @Column(name = "updated_at")
+    private Instant updatedAt;
 }

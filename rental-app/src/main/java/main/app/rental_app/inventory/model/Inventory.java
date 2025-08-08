@@ -14,6 +14,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import main.app.rental_app.car.model.Car;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -32,4 +33,10 @@ public class Inventory {
     
     @Column(name = "quantity")
     private Integer quantity;
+
+    @Column(name = "created_at")
+    private Instant createdAt;
+
+    @Column(name = "updated_at")
+    private Instant updatedAt;
 }

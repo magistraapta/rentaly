@@ -22,6 +22,7 @@ import main.app.rental_app.user.model.User;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import main.app.rental_app.car.model.Car;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -61,5 +62,11 @@ public class Invoices {
 
     @Column(name = "returned_at")
     private Timestamp returnedAt;
+
+    @Column(name = "created_at")
+    private Instant createdAt;
+
+    @Column(name = "updated_at")
+    private Instant updatedAt;
 
 }

@@ -2,6 +2,7 @@ package main.app.rental_app.user.model;
 
 import java.util.Collection;
 import java.util.List;
+import java.time.Instant;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -50,6 +51,12 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Role role;
+
+    @Column(name = "created_at")
+    private Instant createdAt;
+
+    @Column(name = "updated_at")
+    private Instant updatedAt;
 
     @JsonIgnore
     @OneToMany(mappedBy = "user")
