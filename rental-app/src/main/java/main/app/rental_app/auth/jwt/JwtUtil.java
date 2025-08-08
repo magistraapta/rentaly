@@ -93,7 +93,7 @@ public class JwtUtil {
         }
         
         boolean hasRequiredRole = authentication.getAuthorities().stream()
-            .anyMatch(authority -> authority.getAuthority().equals("ROLE_" + requiredRole.toUpperCase()));
+            .anyMatch(authority -> authority.getAuthority().equals(requiredRole));
             
         if (!hasRequiredRole) {
             log.warn("Forbidden access attempt - user {} lacks required role: {}", 
