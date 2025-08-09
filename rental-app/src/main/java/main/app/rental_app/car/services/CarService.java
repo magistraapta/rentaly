@@ -13,4 +13,5 @@ public interface CarService {
     ResponseEntity<BaseResponse<CarDto>> getCarById(Long carId) throws ResourceNotFoundException;
     ResponseEntity<BaseResponse<CarDto>> getCarByName(String carName) throws ResourceNotFoundException;
     ResponseEntity<BaseResponse<List<CarDto>>> getCarsByType(CarType carType) throws ResourceNotFoundException;
+    ResponseEntity<BaseResponse<CarDto>> addCar(CarDto carDto) throws ResourceNotFoundException;
 }

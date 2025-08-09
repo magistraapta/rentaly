@@ -62,4 +62,15 @@ public class CarServiceImpl implements CarService {
             throw new ResourceNotFoundException("No cars found for type: " + carType);
         }
     }
+
+    @Override
+    public ResponseEntity<BaseResponse<CarDto>> addCar(CarDto carDto) throws ResourceNotFoundException {
+        try {
+            Car car = carMapper.toEntity(carDto);
+            carRepository.save(car);
+            return ResponseEntity.ok(BaseResponse.success(HttpStatus.OK, "Car added", carMapper.toDto(car)));
+        } catch (Exception e) {
+            throw new RuntimeException("Internal server error: " + e.getMessage());
+        }
+    }
 }

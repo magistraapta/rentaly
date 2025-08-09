@@ -1,23 +1,27 @@
 package main.app.rental_app.car.controller;
 
 import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.app.rental_app.exc.BadRequestException;
-import main.app.rental_app.exc.UnauthorizedException;
-import main.app.rental_app.exc.ForbiddenException;
-import main.app.rental_app.car.services.CarService;
+import main.app.rental_app.auth.jwt.JwtUtil;
 import main.app.rental_app.car.model.dto.CarDto;
 import main.app.rental_app.car.model.enums.CarType;
+import main.app.rental_app.car.services.CarService;
+import main.app.rental_app.exc.BadRequestException;
+import main.app.rental_app.exc.ForbiddenException;
 import main.app.rental_app.exc.ResourceNotFoundException;
-import main.app.rental_app.auth.jwt.JwtUtil;
+import main.app.rental_app.exc.UnauthorizedException;
 import main.app.rental_app.shared.BaseResponse;
-import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/v1/cars")
@@ -30,11 +34,7 @@ public class CarController {
 
     @GetMapping("/{id}")
     public ResponseEntity<BaseResponse<CarDto>> getCarById(@PathVariable Long id) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
-        // Check authentication (401 Unauthorized)
-        jwtUtil.checkAuthentication();
         
-        // Check authorization (403 Forbidden) - example: only users with 'admin' role can access
-        // jwtUtil.checkAuthorization("admin");
         
         try {
             log.info("Fetching car with id: {}", id);
@@ -47,8 +47,7 @@ public class CarController {
 
     @GetMapping("/name/{name}")
     public ResponseEntity<BaseResponse<CarDto>> getCarByName(@PathVariable String name) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
-        // Check authentication (401 Unauthorized)
-        jwtUtil.checkAuthentication();
+        
         
         try {
             log.info("Fetching car with name: {}", name);
@@ -61,8 +60,7 @@ public class CarController {
 
     @GetMapping("/type/{type}")
     public ResponseEntity<BaseResponse<List<CarDto>>> getCarsByType(@PathVariable String type) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
-        // Check authentication (401 Unauthorized)
-        jwtUtil.checkAuthentication();
+        
         
         try {
             log.info("Fetching cars with type: {}", type);
@@ -77,4 +75,9 @@ public class CarController {
         }
     }
 
+    @PostMapping("/add")
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<BaseResponse<CarDto>> addCar(@RequestBody CarDto carDto) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
+            return carService.addCar(carDto);
+    }
 }

@@ -1,8 +1,6 @@
 package main.app.rental_app.car.mapper;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 
 import main.app.rental_app.car.model.Car;
 import main.app.rental_app.car.model.dto.CarDto;
@@ -18,7 +16,6 @@ public interface CarMapper {
     
     default CarDto toDto(Car car) {
         return CarDto.builder()
-                .id(car.getId())
                 .name(car.getName())
                 .description(car.getDescription())
                 .price(car.getPrice())
@@ -29,7 +26,6 @@ public interface CarMapper {
     
     default Car toEntity(CarDto carDto) {
         return Car.builder()
-                .id(carDto.getId())
                 .name(carDto.getName())
                 .description(carDto.getDescription())
                 .price(carDto.getPrice())
