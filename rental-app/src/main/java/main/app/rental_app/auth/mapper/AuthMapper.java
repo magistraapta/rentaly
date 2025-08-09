@@ -14,11 +14,29 @@ import main.app.rental_app.auth.model.RefreshToken;
 
 @Mapper(componentModel = "spring")
 public interface AuthMapper {
-    UserResponseDto userToUserResponseDto(User user);
-    RegisterResponseDto userToRegisterResponseDto(User user);   
+    
+    default UserResponseDto userToUserResponseDto(User user) {
+        return UserResponseDto.builder()
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .password(user.getPassword())
+                .role(user.getRole().name())
+                .build();
+    }
+    
+    default RegisterResponseDto userToRegisterResponseDto(User user) {
+        return RegisterResponseDto.builder()
+                .email(user.getEmail())
+                .build();
+    }   
 
-    @Mapping(target = "userResponseDto", source = "user")
-    LoginResponseDto userToLoginResponseDto(User user, String accessToken, String refreshToken);
+    default LoginResponseDto userToLoginResponseDto(User user, String accessToken, String refreshToken) {
+        return LoginResponseDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .userResponseDto(userToUserResponseDto(user))
+                .build();
+    }
 
     @Named("userToRefreshToken")
     default RefreshToken userToRefreshToken(User user, String token, Instant expiryDate) {

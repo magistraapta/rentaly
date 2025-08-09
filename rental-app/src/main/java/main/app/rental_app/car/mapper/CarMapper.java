@@ -2,6 +2,7 @@ package main.app.rental_app.car.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 
 import main.app.rental_app.car.model.Car;
 import main.app.rental_app.car.model.dto.CarDto;
@@ -15,10 +16,26 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface CarMapper {
     
-    @Mapping(target = "carImage", expression = "java(getFirstCarImageUrl(car.getCarImages()))")
-    CarDto toDto(Car car);
+    default CarDto toDto(Car car) {
+        return CarDto.builder()
+                .id(car.getId())
+                .name(car.getName())
+                .description(car.getDescription())
+                .price(car.getPrice())
+                .carType(car.getCarType())
+                .carImage(getFirstCarImageUrl(car.getCarImages()))
+                .build();
+    }
     
-    Car toEntity(CarDto carDto);
+    default Car toEntity(CarDto carDto) {
+        return Car.builder()
+                .id(carDto.getId())
+                .name(carDto.getName())
+                .description(carDto.getDescription())
+                .price(carDto.getPrice())
+                .carType(carDto.getCarType())
+                .build();
+    }
     
     default String getFirstCarImageUrl(List<CarImage> carImages) {
         if (carImages == null || carImages.isEmpty()) {
