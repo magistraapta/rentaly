@@ -18,6 +18,7 @@ import main.app.rental_app.auth.mapper.AuthMapper;
 import main.app.rental_app.auth.model.dto.request.LoginRequest;
 import main.app.rental_app.auth.model.dto.request.RefreshTokenDto;
 import main.app.rental_app.auth.model.dto.request.RegisterRequest;
+import main.app.rental_app.auth.model.dto.response.UserResponseDto;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -125,6 +126,27 @@ public class AuthServiceImpl implements AuthService {
                             .body(BaseResponse.success(HttpStatus.OK, "Logged out successfully"));
     }
 
+    @Override
+    public ResponseEntity<BaseResponse<UserResponseDto>> getCurrentUser(HttpServletRequest request) {
+        String token = jwtUtil.getTokenFromRequest(request);
+
+        if (token == null) {
+            throw new BadRequestException("Token not found");
+        }
+
+        String username = jwtService.extractUsername(token);
+        if (username == null) {
+            throw new BadRequestException("Invalid token");
+        }
+
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new BadRequestException("User not found"));
+        
+        UserResponseDto userResponse = authMapper.userToUserResponseDto(user);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                            .body(BaseResponse.success(HttpStatus.OK, "User retrieved successfully", userResponse));
+    }
 
     private User authenticate(String username, String password) {
         Authentication authentication = authenticationManager.authenticate(
@@ -151,9 +173,8 @@ public class AuthServiceImpl implements AuthService {
     private void revokeAllTokensForUser(User user) {
         List<RefreshToken> tokens = refreshTokenRepository.findAllByUserAndIsRevokedFalse(user);
         
-        tokens.forEach(t -> t.setRevoked(true));
-        refreshTokenRepository.saveAll(tokens);
-        
+        // Delete old tokens instead of just marking as revoked to avoid unique constraint issues
+        refreshTokenRepository.deleteAll(tokens);
     }
 
     

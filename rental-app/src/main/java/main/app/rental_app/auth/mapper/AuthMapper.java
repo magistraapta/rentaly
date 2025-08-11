@@ -1,6 +1,5 @@
 package main.app.rental_app.auth.mapper;
 
-import org.mapstruct.Mapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Named;
 

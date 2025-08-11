@@ -15,4 +15,6 @@ public interface AuthService {
     ResponseEntity<?> refreshToken(RefreshTokenDto dto);
 
     ResponseEntity<?> logout(HttpServletRequest request);
+
+    ResponseEntity<?> getCurrentUser(HttpServletRequest request);
 }
