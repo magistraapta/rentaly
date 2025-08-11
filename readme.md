@@ -13,6 +13,7 @@
 - [x] Setup prometheus & Grafana
 - [x] setup upload modules
 - [x] Setup swagger
+- [ ] add test in all modules
 - [ ] Setup email (booking, payment, account notifications)
 - [ ] Setup Payment
 - [ ] Setup caching with redis
