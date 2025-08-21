@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -60,6 +61,8 @@ public class FileUploadServiceImpl implements FileUploadService {
             CarImage carImage = CarImage.builder()
                 .car(car)  // Use the car we already validated
                 .imageUrl(filePath)
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
                 .build();
             
             fileUploadRepository.save(carImage);
@@ -84,3 +87,4 @@ public class FileUploadServiceImpl implements FileUploadService {
     }
 
 }
+
