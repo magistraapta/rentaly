@@ -1,12 +1,14 @@
 package main.app.rental_app.car.mapper;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.mapstruct.Mapper;
 
 import main.app.rental_app.car.model.Car;
 import main.app.rental_app.car.model.dto.CarDto;
 import main.app.rental_app.upload.model.CarImage;
-
-import java.util.List;
+import main.app.rental_app.upload.model.dto.CarImageDto;
 
 /**
  * CarMapper is a mapper for the Car entity and CarDto
@@ -15,12 +17,19 @@ import java.util.List;
 public interface CarMapper {
     
     default CarDto toDto(Car car) {
+        List<CarImageDto> carImageDtos = null;
+        if (car.getCarImages() != null) {
+            carImageDtos = car.getCarImages().stream()
+                    .map(this::toCarImageDto)
+                    .collect(Collectors.toList());
+        }
+        
         return CarDto.builder()
                 .name(car.getName())
                 .description(car.getDescription())
                 .price(car.getPrice())
                 .carType(car.getCarType())
-                .carImage(getFirstCarImageUrl(car.getCarImages()))
+                .carImages(carImageDtos)
                 .build();
     }
     
@@ -30,6 +39,16 @@ public interface CarMapper {
                 .description(carDto.getDescription())
                 .price(carDto.getPrice())
                 .carType(carDto.getCarType())
+                .build();
+    }
+    
+    default CarImageDto toCarImageDto(CarImage carImage) {
+        if (carImage == null) {
+            return null;
+        }
+        return CarImageDto.builder()
+                .id(carImage.getId())
+                .imageUrl(carImage.getImageUrl())
                 .build();
     }
     
