@@ -1,23 +1,22 @@
 package main.app.rental_app.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
-    private final RateLimitInterceptor rateLimitInterceptor;
+
+    @Value("${file.upload.directory}")
+    private String uploadDir;
 
     @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(rateLimitInterceptor)
-                .addPathPatterns("/**")  // Apply to all paths
-                .excludePathPatterns(    // Exclude certain paths if needed
-                        "/actuator/**",   // Health checks
-                        "/h2-console/**"  // H2 console (if using test profile)
-                );
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/images/**")
+                .addResourceLocations("file:" + uploadDir);
     }
 }
