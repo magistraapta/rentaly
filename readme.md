@@ -168,14 +168,71 @@ rental-app/src/main/resources/db/migration/
 
 ## 🔐 Authentication
 
-The application uses JWT (JSON Web Tokens) for authentication:
+The application uses JWT (JSON Web Tokens) for authentication with a secure access token + refresh token pattern:
+
+### 🔄 Authentication Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant B as Backend API
+    participant DB as Database
+
+    Note over U,DB: 1. User Registration
+    U->>F: Register with email/password
+    F->>B: POST /api/auth/register
+    B->>DB: Save user to database
+    B->>F: Return success message
+    F->>U: Registration successful
+
+    Note over U,DB: 2. User Login
+    U->>F: Login with credentials
+    F->>B: POST /api/auth/login
+    B->>DB: Validate credentials
+    B->>F: Return access token (15min) + refresh token (7 days)
+    F->>U: Login successful, store tokens
+
+    Note over U,DB: 3. Making API Calls
+    U->>F: Access protected endpoint
+    F->>B: API call with Bearer <access_token>
+    B->>B: Validate JWT token
+    alt Token Valid
+        B->>DB: Process request
+        DB->>B: Return data
+        B->>F: Return response
+        F->>U: Show data
+    else Token Expired
+        B->>F: Return 401 Unauthorized
+        F->>B: POST /api/auth/refresh-token
+        B->>DB: Validate refresh token
+        B->>F: Return new access token
+        F->>B: Retry original request with new token
+        B->>DB: Process request
+        DB->>B: Return data
+        B->>F: Return response
+        F->>U: Show data
+    end
+
+    Note over U,DB: 4. Token Refresh (Automatic)
+    Note over F: Frontend automatically handles token refresh
+    Note over F: User never notices the 15-minute token lifetime
+```
+
+### 🔑 Token Strategy
+
+- **Access Token**: 15 minutes lifetime for security
+- **Refresh Token**: 7 days lifetime for user convenience
+- **Auto-refresh**: Seamless token renewal without user intervention
+
+### 📍 Authentication Endpoints
 
 1. **Register** at `/api/auth/register`
 2. **Login** at `/api/auth/login` to receive access and refresh tokens
-3. **Use access token** in Authorization header: `Bearer <token>`
-4. **Refresh token** when access token expires
+3. **Refresh** at `/api/auth/refresh-token` to get new access token
+4. **Use access token** in Authorization header: `Bearer <token>`
 
-### User Roles
+### 👥 User Roles
 - **USER**: Can browse cars, make bookings, view invoices
 - **ADMIN**: Can manage cars, view all bookings, access admin dashboard
 
