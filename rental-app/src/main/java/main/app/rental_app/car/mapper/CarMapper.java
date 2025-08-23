@@ -25,11 +25,14 @@ public interface CarMapper {
         }
         
         return CarDto.builder()
+                .id(car.getId())
                 .name(car.getName())
                 .description(car.getDescription())
                 .price(car.getPrice())
                 .carType(car.getCarType())
                 .carImages(carImageDtos)
+                .createdAt(car.getCreatedAt())
+                .updatedAt(car.getUpdatedAt())
                 .build();
     }
     
@@ -49,6 +52,8 @@ public interface CarMapper {
         return CarImageDto.builder()
                 .id(carImage.getId())
                 .imageUrl(carImage.getImageUrl())
+                .createdAt(carImage.getCreatedAt())
+                .updatedAt(carImage.getUpdatedAt())
                 .build();
     }
     

@@ -60,8 +60,7 @@ public class Car {
     private List<Invoices> invoices;
 
     // One-to-Many relationship with CarImage
-    @JsonIgnore
-    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<CarImage> carImages;
 
     @Column(name = "created_at")

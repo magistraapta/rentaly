@@ -32,7 +32,7 @@ public class CarImage {
     private Car car;
 
     private String imageUrl;
-
+    
     @Column(name = "created_at")
     private Instant createdAt;
 

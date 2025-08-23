@@ -2,18 +2,23 @@ package main.app.rental_app.car.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import main.app.rental_app.car.model.dto.CarDto;
+import main.app.rental_app.car.model.dto.CreateCarRequest;
 import main.app.rental_app.car.model.enums.CarType;
 import main.app.rental_app.car.services.CarService;
 import main.app.rental_app.exc.BadRequestException;
@@ -88,5 +93,65 @@ public class CarController {
     @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<BaseResponse<CarDto>> addCar(@RequestBody CarDto carDto) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
             return ResponseEntity.ok(carService.addCar(carDto));
+    }
+
+    @PostMapping("/add-with-images")
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<BaseResponse<CarDto>> addCarWithImages(
+            @RequestParam("name") String name,
+            @RequestParam("description") String description,
+            @RequestParam("price") Integer price,
+            @RequestParam("carType") String carType,
+            @RequestParam(value = "images", required = false) MultipartFile[] images) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
+        
+        try {
+            log.info("Adding car with images: {}", name);
+            log.info("Images received: {}", images != null ? images.length : "null");
+            if (images != null) {
+                for (int i = 0; i < images.length; i++) {
+                    MultipartFile image = images[i];
+                    log.info("Image {}: name={}, size={}, empty={}", i, 
+                        image != null ? image.getOriginalFilename() : "null",
+                        image != null ? image.getSize() : "null",
+                        image != null ? image.isEmpty() : "null");
+                }
+            }
+            
+            // Parse car type - handle both uppercase and lowercase input
+            CarType parsedCarType;
+            try {
+                // First try exact match
+                parsedCarType = CarType.valueOf(carType);
+            } catch (IllegalArgumentException e) {
+                // If exact match fails, try case-insensitive match
+                try {
+                    parsedCarType = CarType.valueOf(carType.toUpperCase());
+                } catch (IllegalArgumentException e2) {
+                    throw new BadRequestException("Invalid car type: " + carType + ". Valid types are: SEDAN, SUV, TRUCK");
+                }
+            }
+            
+            // Create request object
+            CreateCarRequest createCarRequest = CreateCarRequest.builder()
+                .name(name)
+                .description(description)
+                .price(price)
+                .carType(parsedCarType)
+                .images(images)
+                .build();
+            
+            log.info("CreateCarRequest built: {}", createCarRequest);
+            
+            return ResponseEntity.ok(carService.addCarWithImages(createCarRequest));
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid car type: {}", carType);
+            throw new BadRequestException("Invalid car type: " + carType + ". Valid types are: SEDAN, SUV, TRUCK");
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('admin')")
+    public ResponseEntity<BaseResponse<CarDto>> deleteCar(@PathVariable Long id) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
+        return ResponseEntity.ok(carService.deleteCar(id));
     }
 }
