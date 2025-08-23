@@ -43,7 +43,14 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/v1/auth/**").permitAll()
-                .requestMatchers("/v1/cars/**").permitAll()  // Allow public access to cars
+                .requestMatchers("/v1/cars").permitAll()  // Allow public access to GET /cars
+                .requestMatchers("/v1/cars/{id}").permitAll()  // Allow public access to GET /cars/{id}
+                .requestMatchers("/v1/cars/name/{name}").permitAll()  // Allow public access to GET /cars/name/{name}
+                .requestMatchers("/v1/cars/type/{type}").permitAll()  // Allow public access to GET /cars/type/{type}
+                // Admin-only endpoints (POST, DELETE operations)
+                .requestMatchers("/v1/cars/add").authenticated()
+                .requestMatchers("/v1/cars/add-with-images").authenticated()
+                .requestMatchers("/v1/cars/{id}").authenticated()  // For DELETE operations
                 // Swagger/OpenAPI endpoints
                 .requestMatchers(
                     "/v3/api-docs/**",
