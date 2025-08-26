@@ -4,17 +4,16 @@ import { check, sleep } from 'k6';
 // Burst test configuration
 export const options = {
   stages: [
-    // Normal load for 30 seconds
-    { duration: '30s', target: 5 },
-    // Burst to 50 users for 1 minute
-    { duration: '1m', target: 50 },
-    // Back to normal for 30 seconds
-    { duration: '30s', target: 5 },
+    { duration: '1m', target: 10 },
+    { duration: '1m', target: 20 },
+    { duration: '1m', target: 30 },
   ],
+
   thresholds: {
-    http_req_duration: ['p(95)<3000'],
-    http_req_failed: ['rate<0.2'],
-  },
+    http_req_failed: ['rate<0.001'], // the error rate must be lower than 0.1%
+    http_req_duration: ['p(90)<2000'], // 90% of requests must complete below 2000ms
+    http_req_receiving: ['max<17000'], // max receive request below 17000ms
+   },
 };
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080';
@@ -23,9 +22,6 @@ export default function () {
   // Test multiple endpoints to trigger rate limiting
   const endpoints = [
     '/v1/cars',
-    '/v1/cars/1',
-    '/actuator/health',
-    '/v1/redis/health',
   ];
 
   endpoints.forEach((endpoint) => {
@@ -59,6 +55,14 @@ export default function () {
       
       sleep(0.1); // Very small delay between burst requests
     }
+  }
+
+  for (let i = 0; i < 10; i++) {
+    const response = http.get(`${BASE_URL}/v1/cars/${i}`);
+
+    check(response, {
+      [`success get car by id: ${i}`]: (r) => r.status === 200 || r.status === 429,
+    });
   }
 
   sleep(1); // Normal delay between iterations
