@@ -2,7 +2,6 @@ package main.app.rental_app.car.controller;
 
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +13,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,10 +39,41 @@ import main.app.rental_app.shared.BaseResponse;
 @RequestMapping("/v1/cars")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Car Management", description = "Endpoints for managing cars in the rental system")
 public class CarController {
     
     private final CarService carService;
 
+    @Operation(
+        summary = "Get all cars",
+        description = "Retrieve a list of all available cars in the system"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Cars retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No cars found",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        )
+    })
     @GetMapping
     public ResponseEntity<BaseResponse<List<CarDto>>> getAllCars() throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
         try {
@@ -46,8 +85,40 @@ public class CarController {
         }
     }
 
+    @Operation(
+        summary = "Get car by ID",
+        description = "Retrieve a specific car by its unique identifier"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Car found successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Car not found",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        )
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<BaseResponse<CarDto>> getCarById(@PathVariable Long id) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
+    public ResponseEntity<BaseResponse<CarDto>> getCarById(
+        @Parameter(description = "Car ID", required = true, example = "1")
+        @PathVariable Long id) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
         
         
         try {
@@ -59,8 +130,40 @@ public class CarController {
         }
     }
 
+    @Operation(
+        summary = "Get car by name",
+        description = "Retrieve a specific car by its name"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Car found successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Car not found",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        )
+    })
     @GetMapping("/name/{name}")
-    public ResponseEntity<BaseResponse<CarDto>> getCarByName(@PathVariable String name) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
+    public ResponseEntity<BaseResponse<CarDto>> getCarByName(
+        @Parameter(description = "Car name", required = true, example = "Toyota Camry")
+        @PathVariable String name) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
         
         
         try {
@@ -72,8 +175,48 @@ public class CarController {
         }
     }
 
+    @Operation(
+        summary = "Get cars by type",
+        description = "Retrieve all cars of a specific type (SEDAN, SUV, TRUCK)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Cars retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid car type",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "No cars found for the specified type",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        )
+    })
     @GetMapping("/type/{type}")
-    public ResponseEntity<BaseResponse<List<CarDto>>> getCarsByType(@PathVariable String type) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
+    public ResponseEntity<BaseResponse<List<CarDto>>> getCarsByType(
+        @Parameter(description = "Car type", required = true, example = "SEDAN", schema = @Schema(allowableValues = {"SEDAN", "SUV", "TRUCK"}))
+        @PathVariable String type) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
         
         
         try {
@@ -89,19 +232,104 @@ public class CarController {
         }
     }
 
+    @Operation(
+        summary = "Add a new car",
+        description = "Create a new car in the system (Admin only)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Car added successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad request - Invalid input data",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - Admin access required",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        )
+    })
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/add")
     @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<BaseResponse<CarDto>> addCar(@RequestBody CarDto carDto) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
+    public ResponseEntity<BaseResponse<CarDto>> addCar(
+        @Parameter(description = "Car details", required = true)
+        @RequestBody CarDto carDto) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
             return ResponseEntity.ok(carService.addCar(carDto));
     }
 
+    @Operation(
+        summary = "Add a new car with images",
+        description = "Create a new car in the system with uploaded images (Admin only)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Car added successfully with images",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Bad request - Invalid input data or car type",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - Admin access required",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        )
+    })
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/add-with-images")
     @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<BaseResponse<CarDto>> addCarWithImages(
+            @Parameter(description = "Car name", required = true, example = "Toyota Camry")
             @RequestParam("name") String name,
+            @Parameter(description = "Car description", required = true, example = "A reliable sedan perfect for city driving")
             @RequestParam("description") String description,
+            @Parameter(description = "Daily rental price", required = true, example = "50")
             @RequestParam("price") Integer price,
+            @Parameter(description = "Car type", required = true, example = "SEDAN", schema = @Schema(allowableValues = {"SEDAN", "SUV", "TRUCK"}))
             @RequestParam("carType") String carType,
+            @Parameter(description = "Car images (optional)", required = false)
             @RequestParam(value = "images", required = false) MultipartFile[] images) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
         
         try {
@@ -149,9 +377,50 @@ public class CarController {
         }
     }
 
+    @Operation(
+        summary = "Delete a car",
+        description = "Remove a car from the system by its ID (Admin only)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Car deleted successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Car not found",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - Admin access required",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        )
+    })
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<BaseResponse<CarDto>> deleteCar(@PathVariable Long id) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
+    public ResponseEntity<BaseResponse<CarDto>> deleteCar(
+        @Parameter(description = "Car ID", required = true, example = "1")
+        @PathVariable Long id) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
         return ResponseEntity.ok(carService.deleteCar(id));
     }
 }
