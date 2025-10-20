@@ -2,39 +2,36 @@ package main.app.rental_app.auth.service;
 
 import java.time.Instant;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import main.app.rental_app.auth.jwt.JwtUtil;
-import main.app.rental_app.auth.jwt.JwtService;
-import main.app.rental_app.auth.mapper.AuthMapper;
-import main.app.rental_app.auth.model.dto.request.LoginRequest;
-import main.app.rental_app.auth.model.dto.request.RefreshTokenDto;
-import main.app.rental_app.auth.model.dto.request.RegisterRequest;
-import main.app.rental_app.auth.model.dto.response.UserResponseDto;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import main.app.rental_app.user.model.User;
-import main.app.rental_app.user.model.enums.Role;
-import main.app.rental_app.user.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import main.app.rental_app.auth.jwt.JwtService;
+import main.app.rental_app.auth.jwt.JwtUtil;
+import main.app.rental_app.auth.mapper.AuthMapper;
 import main.app.rental_app.auth.model.RefreshToken;
+import main.app.rental_app.auth.model.dto.request.LoginRequest;
+import main.app.rental_app.auth.model.dto.request.RefreshTokenDto;
+import main.app.rental_app.auth.model.dto.request.RegisterRequest;
+import main.app.rental_app.auth.model.dto.response.LoginResponseDto;
+import main.app.rental_app.auth.model.dto.response.RegisterResponseDto;
+import main.app.rental_app.auth.model.dto.response.UserResponseDto;
 import main.app.rental_app.auth.repository.RefreshTokenRepository;
 import main.app.rental_app.exc.BadRequestException;
 import main.app.rental_app.shared.BaseResponse;
-import main.app.rental_app.auth.model.dto.response.RegisterResponseDto;
-import main.app.rental_app.auth.model.dto.response.LoginResponseDto;
+import main.app.rental_app.user.model.User;
+import main.app.rental_app.user.model.enums.Role;
+import main.app.rental_app.user.repository.UserRepository;
+import main.app.rental_app.user.service.UserServiceImpl;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +47,8 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
 
+    private final UserServiceImpl userService;
+
     @Value("${application.security.jwt.refresh-token-expiration}")
     private long refreshTokenExpiration;
 
@@ -58,9 +57,14 @@ public class AuthServiceImpl implements AuthService {
         User newUser = User.builder()
                     .username(registerRequest.getUsername())
                     .email(registerRequest.getEmail())
-                    .password(passwordEncoder.encode(registerRequest.getPassword()))  // Only encode once
+                    .password(passwordEncoder.encode(registerRequest.getPassword())) 
                     .role(Role.user)
                     .build();
+
+
+        if (userService.existsByEmail(registerRequest.getEmail())) {
+            throw new BadRequestException("Email already exists");
+        }
 
         userRepository.save(newUser);
 

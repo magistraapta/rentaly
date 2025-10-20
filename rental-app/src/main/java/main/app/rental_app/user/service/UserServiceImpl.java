@@ -37,6 +37,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Boolean existsByEmail(String email) {
+        userRepository.findByEmail(email).isPresent();
+        return userRepository.findByEmail(email).isPresent();
+    }
+
+    @Override
     public Optional<UserDto> getUserByUsername(String username) throws ResourceNotFoundException {
         try {
             log.info("Getting user by username");
