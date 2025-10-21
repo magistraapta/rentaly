@@ -19,8 +19,6 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import main.app.rental_app.bookings.model.Invoices;
 import main.app.rental_app.car.model.enums.CarType;
-import main.app.rental_app.inventory.model.Inventory;
-import main.app.rental_app.upload.model.CarImage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
@@ -49,19 +47,16 @@ public class Car {
     @Enumerated(EnumType.STRING)
     @Column(name = "car_type")
     private CarType carType;
-    
-    // One-to-Many relationship with Inventory
-    @JsonIgnore
-    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Inventory> inventories;
 
     @JsonIgnore
     @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Invoices> invoices;
 
-    // One-to-Many relationship with CarImage
-    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    private List<CarImage> carImages;
+    @Column(name = "stock")
+    private Integer stock;
+
+    @Column(name = "image_url")
+    private String imageUrl;
 
     @Column(name = "created_at")
     private Instant createdAt;

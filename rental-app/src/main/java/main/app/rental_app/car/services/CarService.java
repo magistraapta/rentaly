@@ -1,9 +1,10 @@
 package main.app.rental_app.car.services;
 
+import java.io.IOException;
 import java.util.List;
 
+import main.app.rental_app.car.model.dto.AddCarRequest;
 import main.app.rental_app.car.model.dto.CarDto;
-import main.app.rental_app.car.model.dto.CreateCarRequest;
 import main.app.rental_app.car.model.enums.CarType;
 import main.app.rental_app.shared.BaseResponse;
 
@@ -12,8 +13,8 @@ public interface CarService {
     BaseResponse<CarDto> getCarById(Long carId);
     BaseResponse<CarDto> getCarByName(String carName);
     BaseResponse<List<CarDto>> getCarsByType(CarType carType);
-    BaseResponse<CarDto> addCar(CarDto carDto);
-    BaseResponse<CarDto> addCarWithImages(CreateCarRequest createCarRequest);
+    BaseResponse<CarDto> addCar(AddCarRequest addCarRequest) throws IOException;
     BaseResponse<CarDto> deleteCar(Long carId);
+    BaseResponse<CarDto> updateCar(Long carId, CarDto carDto);
 }
     

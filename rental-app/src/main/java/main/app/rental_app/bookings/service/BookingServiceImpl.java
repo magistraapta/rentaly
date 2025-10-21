@@ -10,7 +10,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.app.rental_app.inventory.service.InventoryService;
 import main.app.rental_app.shared.BaseResponse;
 import main.app.rental_app.user.model.User;
 import org.springframework.security.core.Authentication;
@@ -29,7 +28,6 @@ import main.app.rental_app.car.model.Car;
 public class BookingServiceImpl implements BookingService {
     
     private final InvoiceRepository invoiceRepository;
-    private final InventoryService inventoryService;
     private final CarRepository carRepository;
     
     @Override
@@ -42,7 +40,10 @@ public class BookingServiceImpl implements BookingService {
             Car car = carRepository.findById(carId).orElseThrow(() -> new RuntimeException("Car not found"));
 
             try {
-                inventoryService.checkCarAvailability(carId);
+                if (car.getStock() <= 0) {
+                    return ResponseEntity.badRequest()
+                        .body(BaseResponse.error(HttpStatus.BAD_REQUEST, "Car is not available"));
+                }   
             } catch (Exception e) {
                 return ResponseEntity.badRequest()
                     .body(BaseResponse.error(HttpStatus.BAD_REQUEST, "Car is not available: " + e.getMessage()));
@@ -58,7 +59,8 @@ public class BookingServiceImpl implements BookingService {
                 .totalPrice(car.getPrice())
                 .build();
 
-            inventoryService.decreaseCarInventory(car.getId());
+            car.setStock(car.getStock() - 1);
+            carRepository.save(car);
 
             invoiceRepository.save(newInvoice);
 
@@ -100,7 +102,8 @@ public class BookingServiceImpl implements BookingService {
             invoice.setReturnedAt(Timestamp.valueOf(LocalDateTime.now()));
             
             // Increase car inventory when returned
-            inventoryService.increaseCarInventory(invoice.getCar().getId());
+            invoice.getCar().setStock(invoice.getCar().getStock() + 1);
+            carRepository.save(invoice.getCar());
             
             invoiceRepository.save(invoice);
             
@@ -125,7 +128,8 @@ public class BookingServiceImpl implements BookingService {
             invoice.setRentStatus(RentStatus.cancelled);
             
             // Increase car inventory when cancelled
-            inventoryService.increaseCarInventory(invoice.getCar().getId());
+            invoice.getCar().setStock(invoice.getCar().getStock() + 1);
+            carRepository.save(invoice.getCar());
             
             invoiceRepository.save(invoice);
             

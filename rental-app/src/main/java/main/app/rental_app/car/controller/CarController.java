@@ -1,35 +1,36 @@
 package main.app.rental_app.car.controller;
 
+import java.io.IOException;
 import java.util.List;
-
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import main.app.rental_app.car.model.dto.AddCarRequest;
 import main.app.rental_app.car.model.dto.CarDto;
-import main.app.rental_app.car.model.dto.CreateCarRequest;
 import main.app.rental_app.car.model.enums.CarType;
 import main.app.rental_app.car.services.CarService;
 import main.app.rental_app.exc.BadRequestException;
+import main.app.rental_app.exc.CarNotFoundException;
 import main.app.rental_app.exc.ForbiddenException;
 import main.app.rental_app.exc.ResourceNotFoundException;
 import main.app.rental_app.exc.UnauthorizedException;
@@ -213,22 +214,21 @@ public class CarController {
             )
         )
     })
-    @GetMapping("/type/{type}")
+    @GetMapping("/type")
     public ResponseEntity<BaseResponse<List<CarDto>>> getCarsByType(
-        @Parameter(description = "Car type", required = true, example = "SEDAN", schema = @Schema(allowableValues = {"SEDAN", "SUV", "TRUCK"}))
-        @PathVariable String type) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
+        @Parameter(name = "type", description = "Car type", required = true, example = "SEDAN", schema = @Schema(allowableValues = {"SEDAN", "SUV", "TRUCK"}))
+        @RequestParam("type") String type) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
         
         
         try {
-            log.info("Fetching cars with type: {}", type);
-            CarType carType = CarType.valueOf(type.toLowerCase());
+            String normalizedType = type.toLowerCase();
+            CarType carType = CarType.valueOf(normalizedType);
+
             return ResponseEntity.ok(carService.getCarsByType(carType));
         } catch (IllegalArgumentException e) {
-            log.error("Invalid car type: {}", type);
             throw new BadRequestException("Invalid car type: " + type);
         } catch (ResourceNotFoundException e) {
-            log.error("No cars found for type: {}", type);
-            throw new ResourceNotFoundException("No cars found for type: " + e.getMessage());
+            throw new CarNotFoundException("No cars found for type: " + e.getMessage());
         }
     }
 
@@ -271,111 +271,14 @@ public class CarController {
         )
     })
     @SecurityRequirement(name = "bearerAuth")
-    @PostMapping("/add")
+    @PostMapping(value = "/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('admin')")
     public ResponseEntity<BaseResponse<CarDto>> addCar(
         @Parameter(description = "Car details", required = true)
-        @RequestBody CarDto carDto) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
-            return ResponseEntity.ok(carService.addCar(carDto));
+        @ModelAttribute AddCarRequest addCarRequest) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException, IOException {
+            return ResponseEntity.ok(carService.addCar(addCarRequest));
     }
 
-    @Operation(
-        summary = "Add a new car with images",
-        description = "Create a new car in the system with uploaded images (Admin only)"
-    )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Car added successfully with images",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = BaseResponse.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Bad request - Invalid input data or car type",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = BaseResponse.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Forbidden - Admin access required",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = BaseResponse.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "500",
-            description = "Internal server error",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = BaseResponse.class)
-            )
-        )
-    })
-    @SecurityRequirement(name = "bearerAuth")
-    @PostMapping("/add-with-images")
-    @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<BaseResponse<CarDto>> addCarWithImages(
-            @Parameter(description = "Car name", required = true, example = "Toyota Camry")
-            @RequestParam("name") String name,
-            @Parameter(description = "Car description", required = true, example = "A reliable sedan perfect for city driving")
-            @RequestParam("description") String description,
-            @Parameter(description = "Daily rental price", required = true, example = "50")
-            @RequestParam("price") Integer price,
-            @Parameter(description = "Car type", required = true, example = "SEDAN", schema = @Schema(allowableValues = {"SEDAN", "SUV", "TRUCK"}))
-            @RequestParam("carType") String carType,
-            @Parameter(description = "Car images (optional)", required = false)
-            @RequestParam(value = "images", required = false) MultipartFile[] images) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
-        
-        try {
-            log.info("Adding car with images: {}", name);
-            log.info("Images received: {}", images != null ? images.length : "null");
-            if (images != null) {
-                for (int i = 0; i < images.length; i++) {
-                    MultipartFile image = images[i];
-                    log.info("Image {}: name={}, size={}, empty={}", i, 
-                        image != null ? image.getOriginalFilename() : "null",
-                        image != null ? image.getSize() : "null",
-                        image != null ? image.isEmpty() : "null");
-                }
-            }
-            
-            // Parse car type - handle both uppercase and lowercase input
-            CarType parsedCarType;
-            try {
-                // First try exact match
-                parsedCarType = CarType.valueOf(carType);
-            } catch (IllegalArgumentException e) {
-                // If exact match fails, try case-insensitive match
-                try {
-                    parsedCarType = CarType.valueOf(carType.toUpperCase());
-                } catch (IllegalArgumentException e2) {
-                    throw new BadRequestException("Invalid car type: " + carType + ". Valid types are: SEDAN, SUV, TRUCK");
-                }
-            }
-            
-            // Create request object
-            CreateCarRequest createCarRequest = CreateCarRequest.builder()
-                .name(name)
-                .description(description)
-                .price(price)
-                .carType(parsedCarType)
-                .images(images)
-                .build();
-            
-            log.info("CreateCarRequest built: {}", createCarRequest);
-            
-            return ResponseEntity.ok(carService.addCarWithImages(createCarRequest));
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid car type: {}", carType);
-            throw new BadRequestException("Invalid car type: " + carType + ". Valid types are: SEDAN, SUV, TRUCK");
-        }
-    }
 
     @Operation(
         summary = "Delete a car",
@@ -422,5 +325,31 @@ public class CarController {
         @Parameter(description = "Car ID", required = true, example = "1")
         @PathVariable Long id) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
         return ResponseEntity.ok(carService.deleteCar(id));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('admin')")
+    @Operation(
+        summary = "Update a car",
+        description = "Update a car in the system by its ID (Admin only)"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Car updated successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        )
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<BaseResponse<CarDto>> updateCar(
+        @Parameter(description = "Car ID", required = true, example = "1")
+        @PathVariable Long id,
+        @Parameter(description = "Car details", required = true)
+        @RequestBody CarDto carDto) throws ResourceNotFoundException, UnauthorizedException, ForbiddenException {
+        
+            return ResponseEntity.ok(carService.updateCar(id, carDto));
     }
 }
