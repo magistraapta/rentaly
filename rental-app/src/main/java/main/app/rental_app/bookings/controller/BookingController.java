@@ -1,5 +1,6 @@
 package main.app.rental_app.bookings.controller;
 
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -9,22 +10,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-
-import lombok.extern.slf4j.Slf4j;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import main.app.rental_app.bookings.model.Invoices;
+import main.app.rental_app.bookings.model.dto.CreateInvoicesDto;
+import main.app.rental_app.bookings.model.dto.ResponseInvoiceDto;
 import main.app.rental_app.bookings.service.BookingService;
 import main.app.rental_app.shared.BaseResponse;
-import java.util.List;
 
 @RestController
 @RequestMapping("/v1/bookings")
@@ -69,12 +69,12 @@ public class BookingController {
     @PostMapping("/book/{carId}")
     public ResponseEntity<BaseResponse<Invoices>> bookCar(
         @Parameter(description = "Booking details", required = true)
-        @RequestBody Invoices invoice, 
+        @RequestBody CreateInvoicesDto invoiceDto, 
         @Parameter(description = "Car ID to book", required = true, example = "1")
         @PathVariable long carId) {
         try {
-            log.info("Controller:Booking car: {}", invoice);
-            return invoiceService.createInvoice(invoice, carId);
+            log.info("Controller:Booking car: {}", invoiceDto);
+            return invoiceService.createInvoice(invoiceDto, carId);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BaseResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()));
         }
@@ -112,7 +112,7 @@ public class BookingController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/{id}")
-    public ResponseEntity<BaseResponse<Invoices>> getInvoiceById(
+    public ResponseEntity<BaseResponse<ResponseInvoiceDto>> getInvoiceById(
         @Parameter(description = "Booking ID", required = true, example = "1")
         @PathVariable Long id) {
         try {
@@ -156,7 +156,7 @@ public class BookingController {
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/all")
     @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<BaseResponse<List<Invoices>>> getAllInvoices() {
+    public ResponseEntity<BaseResponse<List<ResponseInvoiceDto>>> getAllInvoices() {
         try {
             log.info("Controller: Getting all invoices");
             return invoiceService.getAllInvoices();
@@ -197,7 +197,7 @@ public class BookingController {
     })
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/user/{userId}")
-    public ResponseEntity<BaseResponse<List<Invoices>>> getInvoicesByUserId(
+    public ResponseEntity<BaseResponse<List<ResponseInvoiceDto>>> getInvoicesByUserId(
         @Parameter(description = "User ID", required = true, example = "1")
         @PathVariable Long userId) {
         try {
