@@ -24,7 +24,7 @@ public class UserTestRepository {
 
     @Test
     public void testFindByUsername() {
-        // Given
+        // Arrange
         User user = User.builder()
             .username("test")
             .password("password")
@@ -34,10 +34,10 @@ public class UserTestRepository {
 
         userRepository.save(user);
 
-        // When
+        // Act
         Optional<User> foundUser = userRepository.findByUsername(user.getUsername());
 
-        // Then
+        // Assert
         assertTrue(foundUser.isPresent());
         assertEquals(user.getUsername(), foundUser.get().getUsername());
         assertEquals(user.getEmail(), foundUser.get().getEmail());
@@ -46,16 +46,41 @@ public class UserTestRepository {
 
     @Test
     public void testFindByUsername_NotFound() {
-        // When
-        Optional<User> foundUser = userRepository.findByUsername("nonexistent");
+        // Arrange
+        String username = "nonexistent";
+        // Act
+        Optional<User> foundUser = userRepository.findByUsername(username);
 
-        // Then
+        // Assert
         assertFalse(foundUser.isPresent());
     }
 
     @Test
+    public void testFindByEmail() {
+        // Arrange
+        User user = User.builder()
+            .username("test")
+            .password("password")
+            .email("test@test.com")
+            .role(Role.user)
+            .build();
+
+        userRepository.save(user);
+
+        // Act
+        Optional<User> foundUser = userRepository.findByEmail(user.getEmail());
+
+        // Assert
+        assertTrue(foundUser.isPresent(), "User should be found by email");
+        assertEquals(user.getEmail(), foundUser.get().getEmail(), "Email should match");
+        assertEquals(user.getUsername(), foundUser.get().getUsername(), "Username should match");
+        assertEquals(user.getRole(), foundUser.get().getRole(), "Role should match");
+    }
+
+
+    @Test
     public void testSaveUser() {
-        // Given
+        // Arrange
         User user = User.builder()
             .username("newuser")
             .password("password")
@@ -63,10 +88,10 @@ public class UserTestRepository {
             .role(Role.admin)
             .build();
 
-        // When
+        // Act
         User savedUser = userRepository.save(user);
 
-        // Then
+        // Assert
         assertNotNull(savedUser.getId());
         assertEquals(user.getUsername(), savedUser.getUsername());
         assertEquals(user.getEmail(), savedUser.getEmail());
