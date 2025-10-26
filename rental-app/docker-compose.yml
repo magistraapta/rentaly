@@ -1,5 +1,6 @@
 services:
-  backend:
+
+  backend-app:
     build:
       context: .
       dockerfile: Dockerfile
@@ -8,7 +9,7 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/rentaly_db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/rentaly_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
     depends_on:
@@ -17,27 +18,6 @@ services:
     networks:
       - rental-network
     restart: unless-stopped
-
-  db:
-    image: postgres:16-alpine
-    container_name: rental-app-postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: rentaly_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - db_data:/var/lib/postgresql/data
-      - ./rental-db:/docker-entrypoint-initdb.d
-    networks:
-      - rental-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d rentaly_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   prometheus:
     image: prom/prometheus:latest
