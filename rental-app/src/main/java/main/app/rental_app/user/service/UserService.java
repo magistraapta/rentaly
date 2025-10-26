@@ -12,4 +12,5 @@ public interface UserService {
     UserDto getUserById(Long id) throws ResourceNotFoundException;
     Optional<UserDto> getUserByUsername(String username) throws ResourceNotFoundException;
     UserDto createUser(UserDto userDto);
+    Boolean existsByEmail(String email);
 }

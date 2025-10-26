@@ -1,34 +1,36 @@
 package main.app.rental_app.car.services;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.ArrayList;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import main.app.rental_app.car.mapper.CarMapper;
 import main.app.rental_app.car.model.Car;
+import main.app.rental_app.car.model.dto.AddCarRequest;
 import main.app.rental_app.car.model.dto.CarDto;
-import main.app.rental_app.car.model.dto.CreateCarRequest;
 import main.app.rental_app.car.model.enums.CarType;
 import main.app.rental_app.car.repository.CarRepository;
 import main.app.rental_app.exc.CarNotFoundException;
 import main.app.rental_app.shared.BaseResponse;
-import main.app.rental_app.upload.service.FileUploadService;
-import main.app.rental_app.upload.model.CarImage;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CarServiceImpl implements CarService {
 
+    private static final String UPLOAD_DIR = "src/main/resources/static/images/";
+    
     private final CarRepository carRepository;
     private final CarMapper carMapper;
-    private final FileUploadService fileUploadService;
 
     @Override
     public BaseResponse<List<CarDto>> getAllCars() {
@@ -74,71 +76,134 @@ public class CarServiceImpl implements CarService {
     }
 
     @Override
-    public BaseResponse<CarDto> addCar(CarDto carDto) {
-        Car car = carMapper.toEntity(carDto);
-        carRepository.save(car);
-        return BaseResponse.success(HttpStatus.OK, "Car added", carMapper.toDto(car));
-    }
+    public BaseResponse<CarDto> addCar(AddCarRequest addCarRequest) throws IOException {
+        // Validate required fields
+        if (addCarRequest.getName() == null || addCarRequest.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Car name is required");
+        }
+        if (addCarRequest.getPrice() == null || addCarRequest.getPrice() <= 0) {
+            throw new IllegalArgumentException("Valid car price is required");
+        }
+        if (addCarRequest.getStock() == null || addCarRequest.getStock() < 0) {
+            throw new IllegalArgumentException("Valid stock quantity is required");
+        }
+        if (addCarRequest.getImage() == null || addCarRequest.getImage().isEmpty()) {
+            throw new IllegalArgumentException("Car image is required");
+        }
 
-    @Override
-    public BaseResponse<CarDto> addCarWithImages(CreateCarRequest createCarRequest) {
-        log.info("Processing CreateCarRequest: {}", createCarRequest);
-        log.info("Images in request: {}", createCarRequest.getImages() != null ? createCarRequest.getImages().length : "null");
+        String imageUrl = null;
+        String uploadedFileName = null;
         
-        // First, create the car
-        Car car = Car.builder()
-            .name(createCarRequest.getName())
-            .description(createCarRequest.getDescription())
-            .price(createCarRequest.getPrice())
-            .carType(createCarRequest.getCarType())
-            .build();
+        try {
+            // Validate and process image
+            MultipartFile image = addCarRequest.getImage();
+            
+            // Validate file type
+            String contentType = image.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                throw new IllegalArgumentException("Only image files are allowed");
+            }
+            
+            // Validate file size (5MB limit)
+            long maxSize = 5 * 1024 * 1024; // 5MB in bytes
+            if (image.getSize() > maxSize) {
+                throw new IllegalArgumentException("Image size must be less than 5MB");
+            }
+            
+            // Generate unique filename
+            String originalFilename = image.getOriginalFilename();
+            if (originalFilename == null || originalFilename.trim().isEmpty()) {
+                throw new IllegalArgumentException("Image filename is required");
+            }
+            
+            // Sanitize filename
+            String sanitizedFilename = originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_");
+            uploadedFileName = System.currentTimeMillis() + "_" + sanitizedFilename;
+            
+            // Create upload directory if it doesn't exist
+            Path uploadDir = Paths.get(UPLOAD_DIR);
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+            
+            // Save file to filesystem
+            Path filePath = uploadDir.resolve(uploadedFileName);
+            Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            
+            // Set image URL for database
+            imageUrl = "/images/" + uploadedFileName;
+            
+            log.info("Image uploaded successfully: {}", uploadedFileName);
+            
+        } catch (IOException e) {
+            log.error("Failed to upload image: {}", e.getMessage());
+            throw new IOException("Failed to upload image: " + e.getMessage(), e);
+        } catch (IllegalArgumentException e) {
+            log.error("Image validation failed: {}", e.getMessage());
+            throw e;
+        }
         
-        log.info("Car built: {}", car);
-        
-        // Save the car to get the ID
-        Car savedCar = carRepository.save(car);
-        log.info("Car saved with ID: {}", savedCar.getId());
-        
-        // Upload images if provided
-        if (createCarRequest.getImages() != null && createCarRequest.getImages().length > 0) {
-            log.info("Processing {} images", createCarRequest.getImages().length);
-            for (int i = 0; i < createCarRequest.getImages().length; i++) {
-                MultipartFile image = createCarRequest.getImages()[i];
-                log.info("Processing image {}: name={}, size={}, empty={}", i, 
-                    image != null ? image.getOriginalFilename() : "null",
-                    image != null ? image.getSize() : "null",
-                    image != null ? image.isEmpty() : "null");
-                
-                if (image != null && !image.isEmpty()) {
-                    log.info("Uploading image {} for car ID {}", i, savedCar.getId());
-                    fileUploadService.uploadCarImage(image, savedCar.getId());
-                    log.info("Image {} uploaded successfully", i);
-                } else {
-                    log.warn("Image {} is null or empty, skipping", i);
+        try {
+            // Create and save car entity
+            Car car = Car.builder()
+                .name(addCarRequest.getName().trim())
+                .description(addCarRequest.getDescription() != null ? addCarRequest.getDescription().trim() : null)
+                .price(addCarRequest.getPrice())
+                .carType(addCarRequest.getCarType())
+                .stock(addCarRequest.getStock())
+                .imageUrl(imageUrl)
+                .build();
+
+            Car savedCar = carRepository.save(car);
+            log.info("Car created successfully with ID: {}", savedCar.getId());
+
+            return BaseResponse.success(HttpStatus.OK, "Car added successfully", carMapper.toDto(savedCar));
+            
+        } catch (Exception e) {
+            // Cleanup uploaded file if car creation fails
+            if (uploadedFileName != null) {
+                try {
+                    Path fileToDelete = Paths.get(UPLOAD_DIR, uploadedFileName);
+                    Files.deleteIfExists(fileToDelete);
+                    log.info("Cleaned up uploaded file after car creation failure: {}", uploadedFileName);
+                } catch (IOException cleanupException) {
+                    log.error("Failed to cleanup uploaded file: {}", cleanupException.getMessage());
                 }
             }
-        } else {
-            log.warn("No images provided in request");
+            
+            log.error("Failed to create car: {}", e.getMessage());
+            throw new IOException("Failed to create car: " + e.getMessage(), e);
         }
-        
-        // Fetch the car again and manually load its images
-        Car carWithImages = carRepository.findById(savedCar.getId())
-            .orElseThrow(() -> new CarNotFoundException("Car not found after image upload"));
-        
-        log.info("Car fetched: {}", carWithImages.getName());
-        
-        // Since we know images were uploaded, let's manually fetch them
-        // This bypasses the JOIN FETCH issues
-        List<CarImage> carImages = fileUploadService.getCarImagesByCarId(savedCar.getId());
-        if (carImages != null && !carImages.isEmpty()) {
-            log.info("Found {} images for car", carImages.size());
-            // Manually set the images on the car object
-            carWithImages.setCarImages(carImages);
-        } else {
-            log.warn("No images found for car ID: {}", savedCar.getId());
+    }
+
+
+    @Override
+    public BaseResponse<CarDto> updateCar(Long carId, CarDto carDto) {
+        Car car = carRepository.findById(carId)
+            .orElseThrow(() -> new CarNotFoundException("Car not found"));
+
+        if (carDto.getName() != null) {
+            car.setName(carDto.getName());
         }
-        
-        return BaseResponse.success(HttpStatus.OK, "Car added with images", carMapper.toDto(carWithImages));
+        if (carDto.getDescription() != null) {
+            car.setDescription(carDto.getDescription());
+        }
+        if (carDto.getPrice() != null) {
+            car.setPrice(carDto.getPrice());
+        }
+        if (carDto.getCarType() != null) {
+            car.setCarType(carDto.getCarType());
+        }
+        if (carDto.getStock() != null) {
+            car.setStock(carDto.getStock());
+        }
+        if (carDto.getImageUrl() != null) {
+            car.setImageUrl(carDto.getImageUrl());
+        }
+
+        car.setUpdatedAt(Instant.now());
+        carRepository.save(car);
+        return BaseResponse.success(HttpStatus.OK, "Car updated", carMapper.toDto(car));
     }
 
     @Override

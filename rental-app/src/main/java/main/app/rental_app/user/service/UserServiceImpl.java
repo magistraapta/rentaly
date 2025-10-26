@@ -26,26 +26,23 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserById(Long id) throws ResourceNotFoundException {
-        try {
-            log.info("Getting user by id");
-            User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-            return userMapper.toDto(user);
-        } catch (ResourceNotFoundException e) {
-            throw new ResourceNotFoundException("User not found"); 
-        }
+        log.info("Getting user by id");
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return userMapper.toDto(user);
+    }
+
+    @Override
+    public Boolean existsByEmail(String email) {
+        return userRepository.findByEmail(email).isPresent();
     }
 
     @Override
     public Optional<UserDto> getUserByUsername(String username) throws ResourceNotFoundException {
-        try {
-            log.info("Getting user by username");
-            User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-            return Optional.of(userMapper.toDto(user));
-        } catch (ResourceNotFoundException e) {
-            throw new ResourceNotFoundException("User not found"); 
-        }
+        log.info("Getting user by username");
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return Optional.of(userMapper.toDto(user));
     }
 
     @Override

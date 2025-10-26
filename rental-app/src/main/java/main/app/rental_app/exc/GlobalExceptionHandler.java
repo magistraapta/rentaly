@@ -27,7 +27,20 @@ public class GlobalExceptionHandler {
      * @return ResponseEntity<ErrorResponse>: Return the exception message with status NOT_FOUND
      */
     public ResponseEntity<BaseResponse<Void>> handleResourceNotFoundException(ResourceNotFoundException ex, HttpServletRequest request) {
-        log.error("Not found at endpoint {} - Message: {}", request.getRequestURI(), ex.getMessage());
+        log.info("Not found at endpoint {} - Message: {}", request.getRequestURI(), ex.getMessage());
+        BaseResponse<Void> errorResponse = BaseResponse.error(HttpStatus.NOT_FOUND, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(CarNotFoundException.class)
+    /**
+     * Handle car not found exception
+     * @param ex CarNotFoundException: Get the exception
+     * @param request HttpServletRequest: Get the request URI
+     * @return ResponseEntity<ErrorResponse>: Return the exception message with status NOT_FOUND
+     */
+    public ResponseEntity<BaseResponse<Void>> handleCarNotFoundException(CarNotFoundException ex, HttpServletRequest request) {
+        log.info("Car not found at endpoint {} - Message: {}", request.getRequestURI(), ex.getMessage());
         BaseResponse<Void> errorResponse = BaseResponse.error(HttpStatus.NOT_FOUND, ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }

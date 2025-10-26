@@ -1,7 +1,6 @@
 package main.app.rental_app.car.model.dto;
 
 import org.springframework.web.multipart.MultipartFile;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,11 +11,11 @@ import main.app.rental_app.car.model.enums.CarType;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateCarRequest {
+public class AddCarRequest {
     private String name;
     private String description;
     private Integer price;
     private CarType carType;
-    private MultipartFile image;
     private Integer stock;
+    private MultipartFile image;
 }
