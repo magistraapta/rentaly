@@ -13,6 +13,7 @@ public interface CarMapper {
     
     default CarDto toDto(Car car) {
         return CarDto.builder()
+                .id(car.getId())
                 .name(car.getName())
                 .description(car.getDescription())
                 .price(car.getPrice())
@@ -26,6 +27,7 @@ public interface CarMapper {
     
     default Car toEntity(CarDto carDto) {
         return Car.builder()
+                .id(carDto.getId())
                 .name(carDto.getName())
                 .description(carDto.getDescription())
                 .price(carDto.getPrice())
