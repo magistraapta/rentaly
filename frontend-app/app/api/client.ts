@@ -28,12 +28,16 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
     (response) => response,
     (error: AxiosError) => {
-        if (error.response?.status === 401) {
-            // Handle unauthorized - clear token and redirect to login
+        const status = error.response?.status
+        if (status === 401 || status === 400) {
+            // Handle unauthorized or bad request (invalid/expired token) - clear token and redirect to login
             if (typeof window !== "undefined") {
                 localStorage.removeItem("token")
                 localStorage.removeItem("refreshToken")
-                window.location.href = "/login"
+                // Only redirect if we're not already on the login page
+                if (window.location.pathname !== "/login") {
+                    window.location.href = "/login"
+                }
             }
         }
         return Promise.reject(error)

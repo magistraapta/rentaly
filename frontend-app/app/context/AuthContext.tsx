@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             } catch (error) {
                 console.error("Failed to fetch user:", error)
                 setUser(null)
-                // Clear invalid token
+                // Clear invalid/expired token on 400 or 401 errors
                 if (typeof window !== "undefined") {
                     localStorage.removeItem("token")
                     localStorage.removeItem("refreshToken")

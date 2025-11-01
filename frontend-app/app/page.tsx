@@ -3,6 +3,7 @@ import Card from "./components/catalog/Card";
 import { cars } from "./data/car";
 import { Car } from "./type/Car";
 import Navbar from "./components/Navbar/Navbar";
+import Link from "next/link";
   
 export default function Home() {
   return (
@@ -34,7 +35,9 @@ function Hero () {
             Find the perfect car for your next trip with our easy to use rental car booking system.
           </p>
           <div className="flex items-center gap-4 text-black">
-            <Button variant={"outline"}>Get Started</Button>
+            <Button variant={"outline"}>
+              <Link href="/cars">Get Started</Link>
+            </Button>
           </div>
         </div>
 

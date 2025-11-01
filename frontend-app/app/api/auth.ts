@@ -1,33 +1,18 @@
 import { LoginRequest } from "../data/auth"
 import { api } from "./api"
+import { BaseResponse } from "../type/BaseResponse"
+import { LoginResponseData } from "../type/Login"
+import { UserResponseData } from "../type/User"
 
 // Backend response structure matching BaseResponse<T>
-interface BaseResponse<T> {
-    statusCode: number
-    message: string
-    data: T
-    timestamp?: string
-}
 
-interface LoginResponseData {
-    accessToken: string
-    refreshToken: string
-    user: {
-        username: string
-        email: string
-        role: string
-    }
-}
+
 
 interface RegisterResponseData {
     email: string
 }
 
-interface UserResponseData {
-    username: string
-    email: string
-    role: string
-}
+
 
 export async function login(request: LoginRequest): Promise<LoginResponseData> {
     const response = await api.post<BaseResponse<LoginResponseData>>(
@@ -57,6 +42,14 @@ export async function register(request: {
 }
 
 export async function getCurrentUser(): Promise<UserResponseData> {
+    // Check if token exists before making request
+    if (typeof window !== "undefined") {
+        const token = localStorage.getItem("token")
+        if (!token) {
+            throw new Error("No authentication token found")
+        }
+    }
+    
     const response = await api.get<BaseResponse<UserResponseData>>("/v1/auth/me")
     return response.data
 }

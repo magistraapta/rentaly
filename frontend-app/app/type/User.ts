@@ -7,3 +7,8 @@ export interface User {
     createdAt: Date
     updatedAt: Date
 }
+export interface UserResponseData {
+    username: string
+    email: string
+    role: string
+}

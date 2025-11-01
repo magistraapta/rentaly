@@ -14,7 +14,9 @@ export default function Navbar() {
     if (loading) {
         return (
             <div className="absolute top-0 left-0 right-0 z-50 flex justify-between items-center p-6">
-                <h1 className="text-2xl font-bold text-white">Rentaly</h1>
+                <h1 className="text-2xl font-bold text-black drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]">
+                    <Link href="/">Rentaly</Link>
+                </h1>
                 <div className="flex items-center gap-4 text-white">
                     <span>Loading...</span>
                 </div>
@@ -24,7 +26,7 @@ export default function Navbar() {
 
     return (
         <div className="absolute top-0 left-0 right-0 z-50 flex justify-between items-center p-6">
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-2xl font-bold text-black drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]">
                 <Link href="/">Rentaly</Link>
             </h1>
             <div className="flex items-center gap-4 text-white">
