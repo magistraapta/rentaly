@@ -2,10 +2,12 @@ import { Button } from "@/components/ui/button";
 import Card from "./components/catalog/Card";
 import { Car } from "./type/Car";
 import { cars } from "./data/car";
+import Navbar from "./components/Navbar/Navbar";
   
 export default function Home() {
   return (
     <div className="bg-zinc-50">
+      <Navbar />
       <Hero />
       <Catalog cars={cars} />
     </div>
