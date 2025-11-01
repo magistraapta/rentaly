@@ -1,11 +1,15 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { User } from "../type/User";
-import axios from "axios";
+"use client"
+
+import { createContext, useContext, useEffect, useState } from "react"
+import { User } from "../type/User"
+import { getCurrentUser, login as loginApi, logout as logoutApi } from "../api/auth"
 
 interface AuthContextType {
     user: User | null
     loading: boolean
-    login: (email: string, password: string) => Promise<void>
+    login: (username: string, password: string) => Promise<void>
+    logout: () => Promise<void>
+    isAuthenticated: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -17,11 +21,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const user = await axios.get<User>("/api/user")
-                setUser(user.data)
-            } catch {
+                const token = localStorage.getItem("token")
+                if (!token) {
+                    setLoading(false)
+                    return
+                }
+                
+                const userData = await getCurrentUser()
+                setUser({
+                    id: 0, // Backend doesn't return id in UserResponseDto
+                    username: userData.username,
+                    email: userData.email,
+                    password: "",
+                    role: userData.role,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                })
+            } catch (error) {
+                console.error("Failed to fetch user:", error)
                 setUser(null)
-                setLoading(false)
+                // Clear invalid token
+                if (typeof window !== "undefined") {
+                    localStorage.removeItem("token")
+                    localStorage.removeItem("refreshToken")
+                }
             } finally {
                 setLoading(false)
             }
@@ -29,21 +52,52 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         fetchUser()
     }, [])
 
-    const login = async (email: string, password: string) => {
+    const login = async (username: string, password: string) => {
         try {
-            await axios.post("/v1/auth/login", { email, password })
-            const user = await axios.get<User>("/api/user")
-            setUser(user.data)
-        } catch {
-            throw new Error("Failed to login")
+            const response = await loginApi({ username, password })
+            
+            // Update user state
+            setUser({
+                id: 0,
+                username: response.user.username,
+                email: response.user.email,
+                password: "",
+                role: response.user.role,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            })
+        } catch (error) {
+            console.error("Login error:", error)
+            const errorMessage = error && typeof error === 'object' && 'response' in error 
+                ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+                : undefined
+            throw new Error(errorMessage || "Failed to login")
+        }
+    }
+
+    const logout = async () => {
+        try {
+            await logoutApi()
+        } catch (error) {
+            console.error("Logout error:", error)
+        } finally {
+            setUser(null)
         }
     }
 
     return (
-        <AuthContext.Provider value={{ user, loading, login }}>
-          {children}
+        <AuthContext.Provider
+            value={{
+                user,
+                loading,
+                login,
+                logout,
+                isAuthenticated: !!user,
+            }}
+        >
+            {children}
         </AuthContext.Provider>
-      );
+    )
 }
 
 export const useAuth = () => {
@@ -53,5 +107,4 @@ export const useAuth = () => {
     }
     return context
 }
-
 

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Card from "./components/catalog/Card";
-import { Car } from "./type/Car";
 import { cars } from "./data/car";
+import { Car } from "./type/Car";
 import Navbar from "./components/Navbar/Navbar";
   
 export default function Home() {
@@ -11,7 +11,7 @@ export default function Home() {
       <Hero />
       <Catalog cars={cars} />
     </div>
-  );
+  );  
 }
 
 
