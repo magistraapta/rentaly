@@ -16,6 +16,8 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.servers.Server;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.Components;
 
 import lombok.RequiredArgsConstructor;
 import main.app.rental_app.user.repository.UserRepository;
@@ -65,6 +67,12 @@ public class ApplicationConfig {
                                 .url("https://opensource.org/licenses/MIT")))
                 .addServersItem(new Server()
                         .url("http://localhost:8080")
-                        .description("Development server"));
+                        .description("Development server"))
+                .components(new Components()
+                        .addSecuritySchemes("bearerAuth", new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")
+                                .description("Enter JWT token. Get token from /v1/auth/login endpoint")));
     }
 }
