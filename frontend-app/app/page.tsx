@@ -1,16 +1,17 @@
 import { Button } from "@/components/ui/button";
-import Card from "./components/catalog/Card";
-import { cars } from "./data/car";
 import { Car } from "./type/Car";
 import Navbar from "./components/Navbar/Navbar";
 import Link from "next/link";
+import { getAllCars } from "./api/car";
+import CarList from "./components/catalog/CarList";
   
-export default function Home() {
+export default async function Home() {
+  const cars: Car[] = await getAllCars()  
   return (
     <div className="bg-zinc-50">
       <Navbar />
       <Hero />
-      <Catalog cars={cars} />
+      <CarList cars={cars} />
     </div>
   );  
 }
@@ -46,16 +47,5 @@ function Hero () {
   )
 }
 
-function Catalog ({ cars }: { cars: Car[] }) {
-  return (
-    <div className="m-6">
-      <h2 className="text-3xl font-bold mb-6">Our Top Picks</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {cars.map((car) => (
-          <Card key={car.id} car={car} />
-        ))}
-      </div>
-    </div>
-  )
-}
+
 

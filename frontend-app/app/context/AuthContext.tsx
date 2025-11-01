@@ -2,12 +2,13 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { User } from "../type/User"
-import { getCurrentUser, login as loginApi, logout as logoutApi } from "../api/auth"
+import { getCurrentUser, login as loginApi, logout as logoutApi, register as registerApi } from "../api/auth"
 
 interface AuthContextType {
     user: User | null
     loading: boolean
     login: (username: string, password: string) => Promise<void>
+    register: (username: string, email: string, password: string) => Promise<void>
     logout: () => Promise<void>
     isAuthenticated: boolean
 }
@@ -75,6 +76,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }
 
+    const register = async (username: string, email: string, password: string) => {
+        try {
+            await registerApi({ username, email, password })
+            // Registration successful - user can now login
+        } catch (error) {
+            console.error("Register error:", error)
+            const errorMessage = error && typeof error === 'object' && 'response' in error 
+                ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+                : undefined
+            throw new Error(errorMessage || "Failed to register")
+        }
+    }
+
     const logout = async () => {
         try {
             await logoutApi()
@@ -91,6 +105,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 user,
                 loading,
                 login,
+                register,
                 logout,
                 isAuthenticated: !!user,
             }}
