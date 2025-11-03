@@ -299,11 +299,11 @@ docker-compose exec db psql -U postgres -d rentaly_db
 - [x] Swagger API documentation
 - [x] Basic CRUD operations for cars and users
 - [x] Booking system foundation
+- [x] Payment integration
 
 ### 🚧 In Progress
 - [ ] Comprehensive testing coverage
 - [ ] Email notification system
-- [ ] Payment integration
 - [ ] Redis caching implementation
 
 ## 🐛 Troubleshooting
