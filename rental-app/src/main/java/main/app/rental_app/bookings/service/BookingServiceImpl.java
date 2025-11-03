@@ -38,6 +38,7 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public ResponseEntity<BaseResponse<Invoices>> createInvoice(CreateInvoicesDto invoiceDto, long carId) {
         try {
+
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication == null || authentication.getPrincipal() == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -74,9 +75,9 @@ public class BookingServiceImpl implements BookingService {
                     .body(BaseResponse.error(HttpStatus.BAD_REQUEST, "Start date cannot be after end date"));
             }
 
-            // Create entity manually to avoid MapStruct LocalDate to LocalDateTime conversion issues
             log.info("Creating invoice for car ID: {}, user: {}, startDate: {}, endDate: {}", 
                 carId, user.getId(), invoiceDto.getStartDate(), invoiceDto.getEndDate());
+
             
             Invoices newInvoice = Invoices.builder()
                 .startDate(invoiceDto.getStartDate().atStartOfDay())
@@ -84,15 +85,17 @@ public class BookingServiceImpl implements BookingService {
                 .createdAt(Instant.now())
                 .updatedAt(Instant.now())
                 .build();
+
+            // Calculate total price
+            int totalPrice = car.getPrice() * (invoiceDto.getEndDate().getDayOfYear() - invoiceDto.getStartDate().getDayOfYear());
             
             // Set additional fields that are not in DTO
             newInvoice.setUser(user);
             newInvoice.setCar(car);
             newInvoice.setStatus(PaymentStatus.pending);
             newInvoice.setRentStatus(RentStatus.rented);
-            newInvoice.setTotalPrice(car.getPrice());
+            newInvoice.setTotalPrice(totalPrice);
 
-            log.info("Saving car with updated stock: {}", car.getStock() - 1);
             car.setStock(car.getStock() - 1);
             carRepository.save(car);
 
@@ -116,7 +119,6 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public ResponseEntity<BaseResponse<List<ResponseInvoiceDto>>> getAllInvoices() {
-        // Mapped from entyty to Response DTO
         List<Invoices> invoices = invoiceRepository.findAll();
 
         List<ResponseInvoiceDto> responseInvoices = invoices.stream()
@@ -150,7 +152,6 @@ public class BookingServiceImpl implements BookingService {
             invoice.setRentStatus(RentStatus.returned);
             invoice.setReturnedAt(Timestamp.valueOf(LocalDateTime.now()));
             
-            // Increase car inventory when returned
             invoice.getCar().setStock(invoice.getCar().getStock() + 1);
             carRepository.save(invoice.getCar());
             
@@ -176,7 +177,6 @@ public class BookingServiceImpl implements BookingService {
             
             invoice.setRentStatus(RentStatus.cancelled);
             
-            // Increase car inventory when cancelled
             invoice.getCar().setStock(invoice.getCar().getStock() + 1);
             carRepository.save(invoice.getCar());
             
