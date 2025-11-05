@@ -1,7 +1,7 @@
 import { getAllCars } from "../api/car"
-import Card from "../components/catalog/Card"
+import Card from "../../components/catalog/Card"
 import { Car } from "../type/Car"
-import Navbar from "../components/Navbar/Navbar"
+import Navbar from "../../components/Navbar/Navbar"
 
 
 export default async function Cars() {

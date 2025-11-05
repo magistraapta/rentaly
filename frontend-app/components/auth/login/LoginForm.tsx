@@ -3,8 +3,8 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { useAuth } from "../../context/AuthContext"
-import { Button } from "../../../components/ui/button"
+import { useAuth } from "../../../app/context/AuthContext"
+import { Button } from "../../ui/button"
 
 export default function LoginForm() {
     const [username, setUsername] = useState("")
