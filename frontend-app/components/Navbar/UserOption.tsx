@@ -49,6 +49,9 @@ export default function UserOption() {
                 <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                     Logout
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push("/order")} className="cursor-pointer">
+                    My Orders
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     )
