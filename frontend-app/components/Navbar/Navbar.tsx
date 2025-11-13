@@ -32,10 +32,10 @@ export default function Navbar() {
                 ) : (
                     <>
                         <Button>
-                            <Link href="/login">Login</Link>
+                            <Link href="/auth/login">Login</Link>
                         </Button>
                         <Button variant="secondary">
-                            <Link href="/register">Register</Link>
+                            <Link href="/auth/register">Register</Link>
                         </Button>
                     </>
                 )}

@@ -1,4 +1,4 @@
-import Sidebar from "@/app/components/admin/Sidebar";
+import Sidebar from "@/components/admin/Sidebar";
 
 export default function AdminUsersPage() {
     return (

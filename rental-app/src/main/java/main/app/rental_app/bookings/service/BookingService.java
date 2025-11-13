@@ -14,4 +14,6 @@ public interface BookingService {
     ResponseEntity<BaseResponse<List<ResponseInvoiceDto>>> getInvoicesByUserId(Long userId);
     ResponseEntity<BaseResponse<Invoices>> returnCar(Long invoiceId);
     ResponseEntity<BaseResponse<Invoices>> cancelRental(Long invoiceId);
+    ResponseEntity<BaseResponse<List<ResponseInvoiceDto>>> getOrderByUser();
+    ResponseEntity<BaseResponse<Void>> deleteInvoice(Long invoiceId);
 }

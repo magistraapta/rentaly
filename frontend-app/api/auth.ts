@@ -1,17 +1,9 @@
-import { LoginRequest } from "../data/auth"
+import { LoginRequest } from "../type/auth"
 import { api } from "./api"
 import { BaseResponse } from "../type/BaseResponse"
 import { LoginResponseData } from "../type/Login"
 import { UserResponseData } from "../type/User"
-
-// Backend response structure matching BaseResponse<T>
-
-
-
-interface RegisterResponseData {
-    email: string
-}
-
+import { RegisterResponseData } from "../type/auth"
 
 
 export async function login(request: LoginRequest): Promise<LoginResponseData> {
@@ -20,7 +12,6 @@ export async function login(request: LoginRequest): Promise<LoginResponseData> {
         request
     )
     
-    // Store tokens in localStorage
     if (typeof window !== "undefined" && response.data) {
         localStorage.setItem("token", response.data.accessToken)
         localStorage.setItem("refreshToken", response.data.refreshToken)

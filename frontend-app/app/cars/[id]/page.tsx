@@ -1,54 +1,84 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { getCarById } from "../../api/car"
-import { Car } from "../../type/Car"
+import { getCarById } from "../../../api/car"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "../../../context/AuthContext"
+import { useQuery, useMutation } from "@tanstack/react-query"
+import { processPayment } from "../../../utils/paymentFlow"
+import { CreateOrder } from "../../../type/Order"
 
 export default function CarDetailPage() {
     const params = useParams()
     const router = useRouter()
-    const [car, setCar] = useState<Car | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+    const { isAuthenticated } = useAuth()
     const [imageError, setImageError] = useState(false)
+    const [showBookingForm, setShowBookingForm] = useState(false)
+    const [startDate, setStartDate] = useState("")
+    const [endDate, setEndDate] = useState("")
+    const [paymentError, setPaymentError] = useState<string | null>(null)
 
-    useEffect(() => {
-        const fetchCar = async () => {
-            const idParam = params?.id
-            const id = Array.isArray(idParam) ? idParam[0] : idParam
-            
-            if (!id) {
-                setError("Car ID is required")
-                setLoading(false)
-                return
-            }
+    // Extract and validate car ID
+    const idParam = params?.id
+    const id = Array.isArray(idParam) ? idParam[0] : idParam
+    const carId = id ? Number(id) : null
 
-            const carId = Number(id)
-            if (isNaN(carId)) {
-                setError("Invalid car ID")
-                setLoading(false)
-                return
+    // Fetch car data using useQuery
+    const { data: car, isLoading, isError, error } = useQuery({
+        queryKey: ["car", carId],
+        queryFn: async () => {
+            if (!carId || isNaN(carId)) {
+                throw new Error("Invalid car ID")
             }
+            const carData = await getCarById(carId)
+            // Add id to car data since backend doesn't return it in CarDto
+            return { ...carData, id: carId }
+        },
+        enabled: !!carId && !isNaN(carId),
+    })
 
-            try {
-                setLoading(true)
-                const data = await getCarById(carId)
-                // Add id to car data since backend doesn't return it in CarDto
-                setCar({ ...data, id: carId })
-            } catch (err) {
-                console.error("Error fetching car:", err)
-                setError(err instanceof Error ? err.message : "Failed to load car")
-            } finally {
-                setLoading(false)
-            }
+    // Payment mutation
+    const paymentMutation = useMutation({
+        mutationFn: async (bookingData: CreateOrder) => {
+            if (!carId) throw new Error("Car ID is required")
+            await processPayment(carId, bookingData, (error) => {
+                setPaymentError(error.message)
+            })
+        },
+        onError: (error: Error) => {
+            setPaymentError(error.message || "Failed to process payment")
+        },
+    })
+
+    const handleRentClick = () => {
+        if (!isAuthenticated) {
+            router.push("/auth/login")
+            return
         }
-        fetchCar()
-    }, [params])
+        setShowBookingForm(true)
+    }
 
-    if (loading) {
+    const handleBookingSubmit = (e: React.FormEvent) => {
+        e.preventDefault()
+        setPaymentError(null)
+
+        if (!startDate || !endDate) {
+            setPaymentError("Please select both start and end dates")
+            return
+        }
+
+        const bookingData: CreateOrder = {
+            startDate,
+            endDate,
+        }
+
+        paymentMutation.mutate(bookingData)
+    }
+
+    // Loading state
+    if (isLoading) {
         return (
             <div className="min-h-screen pt-20 px-6">
                 <div className="max-w-7xl mx-auto">
@@ -60,12 +90,15 @@ export default function CarDetailPage() {
         )
     }
 
-    if (error || !car) {
+    // Error state
+    if (isError || !car) {
         return (
             <div className="min-h-screen pt-20 px-6">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col justify-center items-center h-64 gap-4">
-                        <p className="text-red-500">Error: {error || "Car not found"}</p>
+                        <p className="text-red-500">
+                            Error: {error instanceof Error ? error.message : "Car not found"}
+                        </p>
                         <Button onClick={() => router.push("/cars")}>Back to Cars</Button>
                     </div>
                 </div>
@@ -123,13 +156,87 @@ export default function CarDetailPage() {
                         )}
                         
                         <div className="pt-4">
-                            <Button 
-                                size="lg" 
-                                className="w-full"
-                                disabled={car.stock !== undefined && car.stock === 0}
-                            >
-                                {car.stock === 0 ? "Out of Stock" : "Rent This Car"}
-                            </Button>
+                            {!showBookingForm ? (
+                                <>
+                                    <Button 
+                                        size="lg" 
+                                        className="w-full"
+                                        disabled={!isAuthenticated || (car.stock !== undefined && car.stock === 0) || paymentMutation.isPending}
+                                        onClick={handleRentClick}
+                                    >
+                                        {paymentMutation.isPending
+                                            ? "Processing..."
+                                            : !isAuthenticated 
+                                                ? "Login to Rent This Car" 
+                                                : car.stock === 0 
+                                                    ? "Out of Stock" 
+                                                    : "Rent This Car"}
+                                    </Button>
+                                    {!isAuthenticated && (
+                                        <p className="mt-2 text-sm text-center text-gray-600">
+                                            Please <button onClick={() => router.push("/auth/login")} className="text-blue-600 hover:underline font-medium">login</button> to rent this car
+                                        </p>
+                                    )}
+                                </>
+                            ) : (
+                                <form onSubmit={handleBookingSubmit} className="space-y-4">
+                                    <div>
+                                        <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
+                                            Start Date
+                                        </label>
+                                        <input
+                                            type="date"
+                                            id="startDate"
+                                            value={startDate}
+                                            onChange={(e) => setStartDate(e.target.value)}
+                                            min={new Date().toISOString().split("T")[0]}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
+                                            End Date
+                                        </label>
+                                        <input
+                                            type="date"
+                                            id="endDate"
+                                            value={endDate}
+                                            onChange={(e) => setEndDate(e.target.value)}
+                                            min={startDate || new Date().toISOString().split("T")[0]}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            required
+                                        />
+                                    </div>
+                                    {paymentError && (
+                                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                            <p className="text-sm text-red-600">{paymentError}</p>
+                                        </div>
+                                    )}
+                                    <div className="flex gap-3">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="flex-1"
+                                            onClick={() => {
+                                                setShowBookingForm(false)
+                                                setPaymentError(null)
+                                            }}
+                                            disabled={paymentMutation.isPending}
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            type="submit"
+                                            size="lg"
+                                            className="flex-1"
+                                            disabled={paymentMutation.isPending}
+                                        >
+                                            {paymentMutation.isPending ? "Processing..." : "Proceed to Payment"}
+                                        </Button>
+                                    </div>
+                                </form>
+                            )}
                         </div>
                         
                         <div className="pt-4 border-t">

@@ -1,8 +1,8 @@
 "use client"
 
-import Sidebar from "../../components/admin/Sidebar"
-import { getAllCars } from "../../api/car"
-import { Car } from "../../type/Car"
+import Sidebar from "../../../components/admin/Sidebar"
+import { getAllCars } from "../../../api/car"
+import { Car } from "../../../type/Car"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import Link from "next/link"

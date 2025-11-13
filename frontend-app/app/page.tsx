@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Car } from "./type/Car";
-import Navbar from "./components/Navbar/Navbar";
+import { Car } from "../type/Car";
+import Navbar from "../components/Navbar/Navbar";
 import Link from "next/link";
-import { getAllCars } from "./api/car";
-import CarList from "./components/catalog/CarList";
+import { getAllCars } from "../api/car";
+import CarList from "../components/catalog/CarList";
   
 export default async function Home() {
   const cars: Car[] = await getAllCars()  

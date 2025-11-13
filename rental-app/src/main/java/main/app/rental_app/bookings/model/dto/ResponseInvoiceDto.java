@@ -17,6 +17,7 @@ public class ResponseInvoiceDto {
     private RentStatus rentStatus;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private LocalDateTime expiredAt;
     private Integer totalPrice;
     private Instant createdTime;
     private Instant updatedTime;

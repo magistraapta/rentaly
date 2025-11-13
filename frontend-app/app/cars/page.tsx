@@ -1,10 +1,10 @@
-import { getAllCars } from "../api/car"
-import Card from "../components/catalog/Card"
-import { Car } from "../type/Car"
-import Navbar from "../components/Navbar/Navbar"
+import { getAllCars } from "../../api/car"
+import Card from "../../components/catalog/Card"
+import { Car } from "../../type/Car"
+import Navbar from "../../components/Navbar/Navbar"
 
 
-export default async function Cars() {
+export default async function Cars() {  
     const cars: Car[] = await getAllCars()
 
     return (

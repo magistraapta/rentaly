@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -32,7 +33,9 @@ public class BookingServiceImpl implements BookingService {
     
     private final InvoiceRepository invoiceRepository;
     private final CarRepository carRepository;
-    private final InvoiceMapper invoiceMapper;
+
+    @Value("${invoice.expiration.minutes:15}")
+    private int invoiceExpirationMinutes;
 
     @Override
     @Transactional
@@ -94,7 +97,10 @@ public class BookingServiceImpl implements BookingService {
             newInvoice.setCar(car);
             newInvoice.setStatus(PaymentStatus.pending);
             newInvoice.setRentStatus(RentStatus.rented);
+            newInvoice.setExpiredAt(LocalDateTime.now().plusMinutes(invoiceExpirationMinutes));
             newInvoice.setTotalPrice(totalPrice);
+            
+            log.info("Invoice will expire at: {}", newInvoice.getExpiredAt());
 
             car.setStock(car.getStock() - 1);
             carRepository.save(car);
@@ -127,6 +133,27 @@ public class BookingServiceImpl implements BookingService {
 
         return ResponseEntity.ok(BaseResponse.success(HttpStatus.OK, "Invoices found", responseInvoices));
     }   
+
+    @Override
+    public ResponseEntity<BaseResponse<List<ResponseInvoiceDto>>> getOrderByUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(BaseResponse.error(HttpStatus.UNAUTHORIZED, "User not authenticated"));
+        }
+
+        User user = (User) authentication.getPrincipal();
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(BaseResponse.error(HttpStatus.UNAUTHORIZED, "User not found"));
+        }
+
+        List<Invoices> invoices = invoiceRepository.findByUserId(user.getId());
+        List<ResponseInvoiceDto> responseInvoices = invoices.stream()
+            .map(InvoiceMapper::toResponseInvoiceDto)
+            .collect(Collectors.toList());
+        return ResponseEntity.ok(BaseResponse.success(HttpStatus.OK, "Orders found", responseInvoices));
+    }
 
     @Override
     public ResponseEntity<BaseResponse<List<ResponseInvoiceDto>>> getInvoicesByUserId(Long userId) {
@@ -187,4 +214,45 @@ public class BookingServiceImpl implements BookingService {
             throw new RuntimeException("Failed to cancel rental", e);
         }
     }
+
+    @Override
+    @Transactional
+    public ResponseEntity<BaseResponse<Void>> deleteInvoice(Long invoiceId) {
+        // Get authenticated user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(BaseResponse.error(HttpStatus.UNAUTHORIZED, "User not authenticated"));
+        }
+        
+        User user = (User) authentication.getPrincipal();
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(BaseResponse.error(HttpStatus.UNAUTHORIZED, "User not found"));
+        }
+        
+        // Find invoice
+        Invoices invoice = invoiceRepository.findById(invoiceId)
+            .orElseThrow(() -> new RuntimeException("Invoice not found"));
+        
+        // Check if the invoice belongs to the authenticated user
+        if (invoice.getUser() == null || !invoice.getUser().getId().equals(user.getId())) {
+            log.warn("User ID: {} attempted to delete invoice ID: {} owned by user ID: {}", 
+                user.getId(), invoiceId, invoice.getUser() != null ? invoice.getUser().getId() : "null");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(BaseResponse.error(HttpStatus.FORBIDDEN, "You are not authorized to delete this invoice"));
+        }
+        
+        // Restore car stock if invoice is not already cancelled
+        if (invoice.getStatus() != PaymentStatus.cancelled && invoice.getCar() != null) {
+            Car car = invoice.getCar();
+            car.setStock(car.getStock() + 1);
+            carRepository.save(car);
+            log.info("Restored stock for car ID: {} after deleting invoice ID: {}", car.getId(), invoiceId);
+        }
+        
+        invoiceRepository.delete(invoice);
+        log.info("Invoice ID: {} deleted successfully by user ID: {}", invoiceId, user.getId());
+        return ResponseEntity.ok(BaseResponse.success(HttpStatus.OK, "Invoice deleted successfully"));
+    }   
 }
