@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "../../app/context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import UserOption from "./UserOption";
 
 export default function Navbar() {

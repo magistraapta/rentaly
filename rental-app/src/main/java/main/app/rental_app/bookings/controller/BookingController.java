@@ -4,6 +4,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -305,6 +306,91 @@ public class BookingController {
         try {
             log.info("Controller: Cancelling rental for invoice: {}", id);
             return invoiceService.cancelRental(id);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BaseResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()));
+        }
+    }
+
+    @Operation(
+        summary = "Get orders by user",
+        description = "Retrieve all orders for the currently authenticated user"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Orders retrieved successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - User not authenticated",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        )
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    @GetMapping("/user/orders")
+    public ResponseEntity<BaseResponse<List<ResponseInvoiceDto>>> getOrderByUser() {
+        try {
+            log.info("Controller: Getting orders by user");
+            return invoiceService.getOrderByUser();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BaseResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()));
+        }
+    }
+
+    @Operation(
+        summary = "Delete an invoice",
+        description = "Delete an existing invoice by its ID"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Invoice deleted successfully",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Invoice not found",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = BaseResponse.class)
+            )
+        )
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('user')")
+    public ResponseEntity<BaseResponse<Void>> deleteInvoice(
+        @Parameter(description = "Invoice ID", required = true, example = "1")
+        @PathVariable Long id) {
+        try {
+            log.info("Controller: Deleting invoice: {}", id);
+            return invoiceService.deleteInvoice(id);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BaseResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()));
         }

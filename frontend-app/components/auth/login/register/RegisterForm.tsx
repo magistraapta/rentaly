@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "../../../../app/context/AuthContext"
+import { useAuth } from "../../../../context/AuthContext"
 import { Button } from "../../../ui/button"
 import Link from "next/link"
 
@@ -20,7 +20,6 @@ export default function RegisterForm() {
         e.preventDefault()
         setError("")
 
-        // Validation
         if (password !== confirmPassword) {
             setError("Passwords do not match")
             return
@@ -35,7 +34,6 @@ export default function RegisterForm() {
 
         try {
             await register(username, email, password)
-            // Redirect to login page on success
             router.push("/login")
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "Failed to register. Please try again."

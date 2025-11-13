@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { useAuth } from "../../app/context/AuthContext"
+import { useAuth } from "../../context/AuthContext"
 import {
     DropdownMenu,
     DropdownMenuContent,

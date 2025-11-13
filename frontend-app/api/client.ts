@@ -8,7 +8,6 @@ export const apiClient = axios.create({
     timeout: 10000,
 })
 
-// Request interceptor to add auth token
 apiClient.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
         if (typeof window !== "undefined") {
@@ -30,11 +29,9 @@ apiClient.interceptors.response.use(
     (error: AxiosError) => {
         const status = error.response?.status
         if (status === 401 || status === 400) {
-            // Handle unauthorized or bad request (invalid/expired token) - clear token and redirect to login
             if (typeof window !== "undefined") {
                 localStorage.removeItem("token")
                 localStorage.removeItem("refreshToken")
-                // Only redirect if we're not already on the login page
                 if (window.location.pathname !== "/login") {
                     window.location.href = "/login"
                 }

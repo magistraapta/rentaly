@@ -57,6 +57,9 @@ public class Invoices {
     @Column(name = "total_price")
     private Integer totalPrice;
 
+    @Column(name = "expired_at")
+    private LocalDateTime expiredAt;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "rent_status")
     private RentStatus rentStatus;

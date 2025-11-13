@@ -1,6 +1,7 @@
 package main.app.rental_app.bookings.model.mapper;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 import org.mapstruct.Mapper;
 
@@ -33,6 +34,7 @@ public interface InvoiceMapper {
             .rentStatus(invoice.getRentStatus())
             .startTime(invoice.getStartDate())
             .endTime(invoice.getEndDate())
+            .expiredAt(invoice.getExpiredAt())
             .totalPrice(invoice.getTotalPrice())
             .createdTime(invoice.getCreatedAt())
             .updatedTime(invoice.getUpdatedAt())
@@ -43,6 +45,7 @@ public interface InvoiceMapper {
         return Invoices.builder()
             .startDate(invoiceDto.getStartDate().atStartOfDay())
             .endDate(invoiceDto.getEndDate().atTime(23, 59, 59))
+            .expiredAt(LocalDateTime.now().plusMinutes(5))
             .createdAt(Instant.now())
             .updatedAt(Instant.now())
             .build();
