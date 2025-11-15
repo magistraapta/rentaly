@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "../../app/context/AuthContext"
+import { useAuth } from "../../context/AuthContext"
 import { Button } from "@/components/ui/button"
 
 interface AdminGuardProps {
@@ -16,12 +16,12 @@ export default function AdminGuard({ children }: AdminGuardProps) {
     useEffect(() => {
         if (!loading) {
             if (!isAuthenticated || !user) {
-                router.push("/login")
+                router.push("/auth/login")
                 return
             }
 
             if (user.role !== "admin" && user.role !== "ADMIN") {
-                router.push("/login")
+                router.push("/auth/login")
                 return
             }
         }
@@ -42,7 +42,7 @@ export default function AdminGuard({ children }: AdminGuardProps) {
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <p className="text-red-500 mb-4">You must be logged in to access this page.</p>
-                    <Button onClick={() => router.push("/login")}>Go to Login</Button>
+                    <Button onClick={() => router.push("/auth/login")}>Go to Login</Button>
                 </div>
             </div>
         )

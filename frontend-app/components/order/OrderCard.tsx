@@ -1,20 +1,37 @@
 "use client"
 
 import { useState } from "react"
-import { Order } from "@/app/type/Order"
+import { Order } from "@/type/Order"
 import { Button } from "@/components/ui/button"
-import { processPaymentForOrder } from "@/app/utils/paymentFlow"
+import { processPaymentForOrder } from "@/utils/paymentFlow"
 import { TrashIcon } from "lucide-react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { deleteOrder } from "@/api/order"
+import { toast } from "sonner"
 
 export default function OrderCard({ order }: { order: Order }) {
     const [isProcessing, setIsProcessing] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+    const [paymentError, setPaymentError] = useState<string | null>(null)
+    const queryClient = useQueryClient()
 
     const statusStyles: Record<string, string> = {
         pending: "bg-amber-50 text-amber-700 ring-amber-200",
         paid: "bg-emerald-50 text-emerald-700 ring-emerald-200",
         cancelled: "bg-rose-50 text-rose-700 ring-rose-200",
     }
+
+    const deleteMutation = useMutation({
+        mutationFn: async () => {
+            await deleteOrder(order.id)
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["orders"] })
+            toast.success("Order deleted successfully")
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || "Failed to delete order")
+        }
+    })
 
     const normalizedStatus = order.status?.toLowerCase() || ""
     const statusClass = statusStyles[order.status] || statusStyles[normalizedStatus] || statusStyles.Default
@@ -27,20 +44,27 @@ export default function OrderCard({ order }: { order: Order }) {
     const isPending = order.status?.toLowerCase() === "pending" || order.status === "PENDING"
     const isCancelled = order.status?.toLowerCase() === "cancelled" || order.status === "CANCELLED"
 
+    const handleDelete = () => {
+        if (confirm("Are you sure you want to delete this order?")) {
+            deleteMutation.mutate()
+        }
+    }
+
     const handlePayment = async () => {
         setIsProcessing(true)
-        setError(null)
+        setPaymentError(null)
         
         try {
             await processPaymentForOrder(order.id, (err) => {
-                setError(err.message)
+                setPaymentError(err.message)
                 setIsProcessing(false)
             })
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to process payment")
+            setPaymentError(err instanceof Error ? err.message : "Failed to process payment")
             setIsProcessing(false)
         }
     }
+    
 
     return (
         <div key={order.id} className="rounded-xl border border-gray-200 mb-4 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900">
@@ -69,9 +93,9 @@ export default function OrderCard({ order }: { order: Order }) {
                 </div>
             </div>
 
-            {error && (
+            {paymentError && (
                 <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-600">{error}</p>
+                    <p className="text-sm text-red-600">{paymentError}</p>
                 </div>
             )}
 
@@ -88,13 +112,15 @@ export default function OrderCard({ order }: { order: Order }) {
                 <button className="inline-flex items-center rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90">
                     View Details
                 </button>
-                {isCancelled ? (
-                    <Button variant="destructive">
+                {isCancelled && (
+                    <Button 
+                        variant="destructive"
+                        onClick={handleDelete}
+                        disabled={deleteMutation.isPending}
+                    >
                         <TrashIcon className="size-4" />
-                        Delete
+                        {deleteMutation.isPending ? "Deleting..." : "Delete"}
                     </Button>
-                ) : (
-                    <p></p>
                 )}
             </div>
         </div>

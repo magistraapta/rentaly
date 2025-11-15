@@ -6,7 +6,7 @@ import { UserResponseData } from "../type/User"
 import { RegisterResponseData } from "../type/auth"
 
 
-export async function login(request: LoginRequest): Promise<LoginResponseData> {
+export const loginApi = async (request: LoginRequest): Promise<LoginResponseData> => {
     const response = await api.post<BaseResponse<LoginResponseData>>(
         "/v1/auth/login",
         request

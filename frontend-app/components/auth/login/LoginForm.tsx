@@ -5,29 +5,29 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAuth } from "../../../context/AuthContext"
 import { Button } from "../../ui/button"
+import { useMutation } from "@tanstack/react-query"
 
 export default function LoginForm() {
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
-    const [error, setError] = useState("")
-    const [loading, setLoading] = useState(false)
-    const { login } = useAuth()
+    const {login} = useAuth()
     const router = useRouter()
+    
+    const {mutate, isPending, error} = useMutation({
+        mutationFn: ({ username, password }: { username: string; password: string }) => 
+            login(username, password),
+        onSuccess: () => {
+            router.push("/")
+        },
+        onError: (error: Error) => {
+            // Error is already handled and thrown by the login function in AuthContext
+            console.error("Login failed:", error)
+        }
+    })
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        setError("")
-        setLoading(true)
-
-        try {
-            await login(username, password)
-            router.push("/")
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : "Failed to login. Please check your credentials."
-            setError(errorMessage)
-        } finally {
-            setLoading(false)
-        }
+        mutate({username, password})
     }
 
     return (
@@ -37,7 +37,7 @@ export default function LoginForm() {
                 
                 {error && (
                     <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                        {error}
+                        {error.message}
                     </div>
                 )}
 
@@ -74,10 +74,10 @@ export default function LoginForm() {
 
                     <Button
                         type="submit"
-                        disabled={loading}
+                        disabled={isPending}
                         className="w-full"
                     >
-                        {loading ? "Logging in..." : "Login"}
+                        {isPending ? "Logging in..." : "Login"}
                     </Button>
                 </form>
 

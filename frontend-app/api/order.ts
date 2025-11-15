@@ -14,6 +14,6 @@ export async function getOrderByUser(): Promise<Order[]> {
 }
 
 export async function deleteOrder(orderId: number): Promise<Order> {
-    const response = await api.delete<Order>(`/v1/bookings/delete/${orderId}`)
+    const response = await api.delete<Order>(`/v1/bookings/${orderId}`)
     return response
 }

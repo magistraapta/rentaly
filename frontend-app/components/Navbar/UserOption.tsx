@@ -27,7 +27,7 @@ export default function UserOption() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 text-white hover:bg-white/10">
+                <Button variant="ghost" className="flex items-center gap-2">
                     <Image 
                         src="/user-profile.png" 
                         alt="User" 

@@ -14,7 +14,7 @@ export default function Navbar() {
                 <h1 className="text-2xl font-bold text-black drop-shadow-[0_2px_4px_rgba(255,255,255,0.8)]">
                     <Link href="/">Rentaly</Link>
                 </h1>
-                <div className="flex items-center gap-4 text-white">
+                <div className="flex items-center gap-4">
                     <span>Loading...</span>
                 </div>
             </div>
@@ -22,11 +22,11 @@ export default function Navbar() {
     }
 
     return (
-        <div className="absolute top-0 left-0 right-0 z-50 flex justify-between items-center p-6">
+        <div className="flex justify-between items-center p-6">
             <h1 className="text-xl font-bold">
                 <Link href="/">Rentaly</Link>
             </h1>
-            <div className="flex items-center gap-4 text-white">
+            <div className="flex items-center gap-4">
                 {isAuthenticated ? (
                     <UserOption />
                 ) : (
